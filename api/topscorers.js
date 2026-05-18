@@ -41,6 +41,7 @@ function normalize(name) { return NAME_MAP[name] || name; }
 
 const ALLOWED_ORIGINS = [
   "https://bm8-ai.vercel.app",
+  "https://mr-edge.vercel.app",
   "http://localhost:5173",
   "http://localhost:4173",
 ];
