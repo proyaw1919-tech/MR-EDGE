@@ -2941,7 +2941,7 @@ const styles = {
 
   mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   mLeagueTag: { fontSize: 11, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#fff" },
-  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em" },
+  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 20px", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em", boxShadow: "0 2px 12px rgba(249,115,22,0.35)" },
 
   empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
 
