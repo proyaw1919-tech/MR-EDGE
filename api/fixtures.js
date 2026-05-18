@@ -289,6 +289,7 @@ export default async function handler(req, res) {
         matchId: m.id,   // original football-data.org ID for H2H lookup
         status: isFinished ? 'recent' : 'upcoming',
         date:   fmtDate(utc),
+        rawDate: m.utcDate.split('T')[0],
         league,
         home: normalize(m.homeTeam?.shortName || m.homeTeam?.name) || 'TBD',
         away: normalize(m.awayTeam?.shortName || m.awayTeam?.name) || 'TBD',
