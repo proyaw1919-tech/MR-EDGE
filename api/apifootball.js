@@ -15,11 +15,13 @@ export default async function handler(req,res){
   const leagueId=LEAGUE_IDS[league];
   if(!leagueId)return res.status(200).json({injuries:null,prediction:null,debug:'unknown_league'});
   try{
-    const fd=await apiFetch(`/fixtures?date=${date}&league=${leagueId}&season=${getSeason()}`,key);
+    const season=getSeason();
+    const fd=await apiFetch(`/fixtures?date=${date}&league=${leagueId}&season=${season}`,key);
     if(!fd)return res.status(200).json({injuries:null,prediction:null,debug:'api_error'});
+    const rawErr=fd?.errors;const rawMsg=fd?.message;
     const mH=norm(home),mA=norm(away);
     const fix=fd?.response?.find(f=>{const fH=norm(f.teams?.home?.name||''),fA=norm(f.teams?.away?.name||'');return(fH.includes(mH.slice(0,5))||mH.includes(fH.slice(0,5)))&&(fA.includes(mA.slice(0,5))||mA.includes(fA.slice(0,5)));});
-    if(!fix)return res.status(200).json({injuries:null,prediction:null,debug:`no_fixture_found_from_${fd?.response?.length||0}_results`});
+    if(!fix)return res.status(200).json({injuries:null,prediction:null,debug:`no_fixture_found_from_${fd?.response?.length||0}_results`,season,errors:rawErr,message:rawMsg,sampleTeams:fd?.response?.slice(0,3).map(f=>f.teams?.home?.name+' vs '+f.teams?.away?.name)});
     const fid=fix.fixture.id,hid=fix.teams.home.id,aid=fix.teams.away.id;
     const[injD,predD]=await Promise.all([apiFetch(`/injuries?fixture=${fid}`,key),apiFetch(`/predictions?fixture=${fid}`,key)]);
     let injuries=null;
