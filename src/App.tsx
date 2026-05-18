@@ -2882,7 +2882,7 @@ const styles = {
 
   topNav: { background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "0", position: "sticky", top: 0, zIndex: 50, height: 56 },
   navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
-  brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
+  brandBlock: { display: "flex", alignItems: "center", gap: 4, flexShrink: 0 },
   logoImg: { height: 46, width: "auto", display: "block" },
   tagline: { fontFamily: "'Playfair Display', serif", fontSize: 25, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
   navSubtitle: { fontSize: 8, fontWeight: 500, color: "#fff", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
