@@ -1066,8 +1066,16 @@ Rules:
       </header>
 
       {/* HERO */}
-      <section className="bm8-hero" style={styles.hero}>
-        <div style={styles.heroContent}>
+      <section className="bm8-hero" style={{
+        ...styles.hero,
+        backgroundImage: "url('/hero.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}>
+        {/* dark overlay so text stays readable over any photo */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,15,0.62)", zIndex: 0 }} />
+        <div style={{ ...styles.heroContent, position: "relative", zIndex: 1 }}>
           <div style={styles.heroLabel}>
             <span style={styles.heroDot} />
             {activeNav === "live" ? t.liveHeroLabel :
