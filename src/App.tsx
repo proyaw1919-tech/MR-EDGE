@@ -2454,12 +2454,43 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
       </div>
 
       {matchOdds && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 10 }}>
           <OddsCell label={t.homeWin || "Home"} odd={matchOdds.home} />
           <OddsCell label={t.drawCap || "Draw"} odd={matchOdds.draw} />
           <OddsCell label={t.awayWin || "Away"} odd={matchOdds.away} />
         </div>
       )}
+
+      {(() => {
+        const realOdds = oddsFound?.homeOdds ? { home: oddsFound.homeOdds, draw: oddsFound.drawOdds, away: oddsFound.awayOdds } : matchOdds;
+        if (!realOdds || !prob.home) return null;
+        const VALUE_THRESHOLD = 7;
+        const bets = [
+          { label: match.home, aiProb: prob.home, odds: realOdds.home },
+          { label: t.drawCap || "Draw", aiProb: prob.draw, odds: realOdds.draw },
+          { label: match.away, aiProb: prob.away, odds: realOdds.away },
+        ].map(b => ({ ...b, implied: b.odds ? parseFloat((100 / b.odds).toFixed(1)) : 0, edge: b.odds ? parseFloat((b.aiProb - 100 / b.odds).toFixed(1)) : 0 }))
+         .filter(b => b.edge >= VALUE_THRESHOLD)
+         .sort((a, b) => b.edge - a.edge);
+        if (!bets.length) return <div style={{ fontSize: 10, color: "#444", textAlign: "center", marginBottom: 16, letterSpacing: "0.1em" }}>NO VALUE BETS DETECTED</div>;
+        return (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "#22c55e", letterSpacing: "0.2em", marginBottom: 6 }}>⚡ VALUE BET{bets.length > 1 ? "S" : ""} DETECTED</div>
+            {bets.map((b, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 6, marginBottom: 4 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{b.label}</span>
+                  <span style={{ fontSize: 10, color: "#666" }}>AI: {Math.round(b.aiProb)}% · Mkt: {b.implied}% · Odds: {b.odds?.toFixed(2)}</span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#22c55e" }}>+{b.edge}%</div>
+                  <div style={{ fontSize: 9, color: "#22c55e", letterSpacing: "0.1em" }}>EDGE</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       <div style={{ marginBottom: 20 }}>
         <div style={{ ...styles.sectionTitle, display: "flex", alignItems: "center", gap: 8 }}>
