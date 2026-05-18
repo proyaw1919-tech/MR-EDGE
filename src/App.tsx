@@ -995,7 +995,7 @@ Rules:
         <div className="bm8-nav-inner" style={styles.navInner}>
           {/* Logo */}
           <div style={styles.brandBlock}>
-            <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #F0B429, #ff9500)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#000", letterSpacing: "-0.05em", flexShrink: 0 }}>ME</div>
+            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 36, width: "auto", display: "block", flexShrink: 0 }} />
             {lang === "zh"
               ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
               : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
