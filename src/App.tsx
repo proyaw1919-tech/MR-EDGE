@@ -2648,7 +2648,7 @@ function FactorRow({ factor, match }) {
 }
 
 const globalCSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0A0A0F; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -2723,7 +2723,7 @@ const styles = {
   navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
   brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   logoImg: { height: 36, width: "auto", display: "block" },
-  tagline: { fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "0.1em", whiteSpace: "nowrap" as const },
+  tagline: { fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
 
   navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
   navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
