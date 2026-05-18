@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/claude.js": { "maxDuration": 60 },
+    "api/gemini.js": { "maxDuration": 30 },
+    "api/fixtures.js": { "maxDuration": 15 },
+    "api/standings.js": { "maxDuration": 15 },
+    "api/livescores.js": { "maxDuration": 10 },
+    "api/topscorers.js": { "maxDuration": 15 },
+    "api/h2h.js":        { "maxDuration": 15 }
+  }
+}
