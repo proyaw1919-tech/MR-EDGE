@@ -996,7 +996,7 @@ Rules:
           {/* Logo */}
           <div style={styles.brandBlock}>
             <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #F0B429, #ff9500)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#000", letterSpacing: "-0.05em", flexShrink: 0 }}>ME</div>
-            <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span>EDGE</span>
+            <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
           </div>
 
           {/* Desktop nav */}
