@@ -41,13 +41,13 @@ const FOOTBALL_IMG = "/football.jpg";
 // ---- Translations ----
 const T = {
   en: {
-    tagline: "BM8 Paul AI",
+    tagline: "MR.EDGE",
     nav: { fixtures: "Fixtures", live: "Live Predictions", results: "Results", insights: "Insights", standings: "Standings", parlay: "Parlay" },
     heroLabel: "REAL FIXTURES · LIVE PREDICTIONS",
     heroTitle1: "TAP A MATCH.",
     heroTitleEm: "GET",
     heroTitle2: "THE AI VERDICT.",
-    heroSub: "Browse fixtures across leagues worldwide. One tap and BM8 Paul AI analyses the matchup — predicted score, win probabilities, key factors, and what to watch out for.",
+    heroSub: "Browse fixtures across leagues worldwide. One tap and MR.EDGE analyses the matchup — predicted score, win probabilities, key factors, and what to watch out for.",
     // Live Predictions page
     liveHeroLabel: "LIVE · HAPPENING NOW",
     liveHeroTitle: "TODAY'S HOT MATCHES",
@@ -83,7 +83,7 @@ const T = {
     noSearchResults: (q) => `No matches found for "${q}".`,
     predict: "Predict", analyze: "Analyze", predicting: "Predicting...", analyzing: "Analyzing...",
     ft: "FT", vs: "VS",
-    aiPrediction: "BM8 Paul AI PREDICTION", aiAnalysis: "BM8 Paul AI MATCH ANALYSIS",
+    aiPrediction: "MR.EDGE PREDICTION", aiAnalysis: "MR.EDGE MATCH ANALYSIS",
     confidence: "confidence", high: "High", medium: "Medium", low: "Low",
     close: "Close", predictedLikely: "PREDICTED · LIKELY", fullTime: "FULL TIME",
     outcomeProb: "OUTCOME PROBABILITY", aiReasoning: "BM8 Paul AI REASONING",
@@ -97,12 +97,12 @@ const T = {
     estGoals: "Est. Goals",
     matchType: "Match Type",
     overUnderGoals: "Goals Over/Under 2.5",
-    analysingMatch: (h, a) => `BM8 Paul AI is analysing ${h} vs ${a}...`,
+    analysingMatch: (h, a) => `MR.EDGE is analysing ${h} vs ${a}...`,
     failedMsg: (msg) => `Failed: ${msg}`,
     concurrentError: "Another prediction is in progress. Please wait.",
-    footer1: "FIXTURES · WEB SEARCH", footer2: "ANALYSIS · BM8 Paul AI", footer3: "FOR ENTERTAINMENT",
+    footer1: "FIXTURES · WEB SEARCH", footer2: "ANALYSIS · MR.EDGE AI", footer3: "FOR ENTERTAINMENT",
     watchLive: "Watch Live",
-    chatTitle: "BM8 Paul AI",
+    chatTitle: "MR.EDGE",
     chatSubtitle: "How can I help you today?",
     chatSelect: "Select a section to get started:",
     chatQ1: "How accurate are BM8 Paul AI predictions?",
@@ -153,7 +153,7 @@ const T = {
     parlayRegenerate: "New Picks",
   },
   zh: {
-    tagline: "BM8 AI 保罗",
+    tagline: "MR.EDGE",
     nav: { fixtures: "赛程", live: "实时预测", results: "结果", insights: "洞察", standings: "积分榜", parlay: "二串一" },
     heroLabel: "真实赛程 · 实时预测",
     heroTitle1: "点击比赛,",
@@ -265,7 +265,7 @@ const T = {
     parlayRegenerate: "重新生成",
   },
   ms: {
-    tagline: "BM8 AI Paul",
+    tagline: "MR.EDGE",
     nav: { fixtures: "Perlawanan", live: "Ramalan Langsung", results: "Keputusan", insights: "Analisis", standings: "Kedudukan", parlay: "Parlay" },
     heroLabel: "PERLAWANAN SEBENAR · RAMALAN LANGSUNG",
     heroTitle1: "Ketik perlawanan.",
@@ -995,8 +995,8 @@ Rules:
         <div className="bm8-nav-inner" style={styles.navInner}>
           {/* Logo */}
           <div style={styles.brandBlock}>
-            <img src={BM8_LOGO} alt="BM8 AI" style={styles.logoImg} />
-            <span style={styles.tagline}>{t.tagline}</span>
+            <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #F0B429, #ff9500)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#000", letterSpacing: "-0.05em", flexShrink: 0 }}>ME</div>
+            <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span>EDGE</span>
           </div>
 
           {/* Desktop nav */}
@@ -1608,7 +1608,7 @@ function FloatingAssistant({ t, setActiveNav }) {
   const onClose = () => { setOpen(false); setView("main"); };
 
   const Header = () => (
-    <div style={{ background: "linear-gradient(135deg, #ff3030, #cc0000)", padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ background: "linear-gradient(135deg, #C9A84C, #F0B429)", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <img src="/profile-pic.png" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: "50%" }} />
         <div>
@@ -1636,7 +1636,7 @@ function FloatingAssistant({ t, setActiveNav }) {
       </div>
 
       {open && (
-        <div style={{ position: "fixed", bottom: 116, right: 28, zIndex: 200, width: 300, background: "#111", border: "1px solid rgba(255,48,48,0.3)", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
+        <div style={{ position: "fixed", bottom: 116, right: 28, zIndex: 200, width: 300, background: "#111117", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
           <Header />
 
           {view === "main" && (
@@ -1653,7 +1653,7 @@ function FloatingAssistant({ t, setActiveNav }) {
                   onClick={() => setView(q.key as any)}
                   style={{ width: "100%", textAlign: "left" as const, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "11px 14px", color: "#e8e8e8", fontSize: 13, fontFamily: "inherit", cursor: "pointer", marginBottom: 8, display: "flex", alignItems: "center", gap: 10 }}
                 >
-                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,48,48,0.15)", border: "1px solid rgba(255,48,48,0.3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#ff3030", fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(240,180,41,0.12)", border: "1px solid rgba(240,180,41,0.3)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#F0B429", fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
                   {q.label}
                 </button>
               ))}
@@ -1662,11 +1662,11 @@ function FloatingAssistant({ t, setActiveNav }) {
 
           {view === "accuracy" && (
             <div style={{ padding: "14px 14px 18px" }}>
-              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#ff3030", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
-              <div style={{ background: "rgba(255,48,48,0.15)", border: "1px solid rgba(255,48,48,0.4)", borderRadius: 8, padding: "10px 14px", color: "#ff3030", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ1}</div>
+              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#F0B429", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
+              <div style={{ background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 8, padding: "10px 14px", color: "#F0B429", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ1}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,48,48,0.15)", border: "2px solid #ff3030", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ color: "#ff3030", fontWeight: 800, fontSize: 16 }}>87%</span>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(240,180,41,0.1)", border: "2px solid #F0B429", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: "#F0B429", fontWeight: 800, fontSize: 16 }}>87%</span>
                 </div>
                 <div>
                   <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 13 }}>{t.chatAccuracyRate}</div>
@@ -1680,8 +1680,8 @@ function FloatingAssistant({ t, setActiveNav }) {
 
           {view === "bet" && (
             <div style={{ padding: "14px 14px 18px" }}>
-              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#ff3030", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
-              <div style={{ background: "rgba(255,48,48,0.15)", border: "1px solid rgba(255,48,48,0.4)", borderRadius: 8, padding: "10px 14px", color: "#ff3030", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ2}</div>
+              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#F0B429", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
+              <div style={{ background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 8, padding: "10px 14px", color: "#F0B429", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ2}</div>
               <p style={{ color: "#c0c0c0", fontSize: 12, marginBottom: 14 }}>{t.chatBetDesc}</p>
               <a href="https://www.bm8my.vip/games/sports" target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "linear-gradient(135deg, #ff3030, #cc0000)", borderRadius: 8, padding: "13px 14px", textDecoration: "none" }}>
@@ -1694,8 +1694,8 @@ function FloatingAssistant({ t, setActiveNav }) {
 
           {view === "help" && (
             <div style={{ padding: "14px 14px 18px" }}>
-              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#ff3030", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
-              <div style={{ background: "rgba(255,48,48,0.15)", border: "1px solid rgba(255,48,48,0.4)", borderRadius: 8, padding: "10px 14px", color: "#ff3030", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ3}</div>
+              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#F0B429", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
+              <div style={{ background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 8, padding: "10px 14px", color: "#F0B429", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ3}</div>
               <p style={{ color: "#c0c0c0", fontSize: 12, marginBottom: 12 }}>{t.chatHelpDesc}</p>
               <a href="https://direct.lc.chat/16323336/" target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,48,48,0.08)", border: "1px solid rgba(255,48,48,0.25)", borderRadius: 8, padding: "12px 14px", textDecoration: "none", marginBottom: 14 }}>
@@ -1717,8 +1717,8 @@ function FloatingAssistant({ t, setActiveNav }) {
 
           {view === "follow" && (
             <div style={{ padding: "14px 14px 18px" }}>
-              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#ff3030", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
-              <div style={{ background: "rgba(255,48,48,0.15)", border: "1px solid rgba(255,48,48,0.4)", borderRadius: 8, padding: "10px 14px", color: "#ff3030", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ4}</div>
+              <button onClick={() => setView("main")} style={{ background: "none", border: "none", color: "#F0B429", cursor: "pointer", fontSize: 12, padding: 0, marginBottom: 12, display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>{t.chatBack}</button>
+              <div style={{ background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 8, padding: "10px 14px", color: "#F0B429", fontWeight: 600, fontSize: 13, marginBottom: 14 }}>{t.chatQ4}</div>
               <p style={{ color: "#c0c0c0", fontSize: 12, marginBottom: 14 }}>{t.chatFollowDesc}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 {[
@@ -1761,9 +1761,9 @@ function TeamBadge({ name, crest, size = 40 }) {
     return (
       <div style={{
         width: size, height: size, borderRadius: "50%",
-        background: "rgba(255, 0, 0, 0.1)", color: "#ff3030",
+        background: "rgba(240,180,41,0.08)", color: "#F0B429",
         display: "inline-flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0, border: "1px solid rgba(255, 0, 0, 0.2)",
+        flexShrink: 0, border: "1px solid rgba(240,180,41,0.2)",
       }}>
         <Trophy size={size * 0.5} />
       </div>
@@ -1997,7 +1997,7 @@ Provide a clear, informative answer in 2-4 paragraphs. Use bullet points or shor
                   {LEAGUE_LABELS[lg] || lg}
                 </span>
                 <div style={{ height: 8, background: "rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${pct}%`, background: "#ff3030", borderRadius: 4, transition: "width 0.8s ease" }} />
+                  <div style={{ height: "100%", width: `${pct}%`, background: "#F0B429", borderRadius: 4, transition: "width 0.8s ease" }} />
                 </div>
                 <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", textAlign: "right" }}>{count}</span>
               </div>
@@ -2018,7 +2018,7 @@ Provide a clear, informative answer in 2-4 paragraphs. Use bullet points or shor
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") askAI(); }}
             placeholder={t.aiPlaceholder}
-            style={{ flex: 1, minWidth: 240, padding: "14px 18px", background: "#0a0a0a", border: "1px solid rgba(255, 48, 48, 0.25)", borderRadius: 6, color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+            style={{ flex: 1, minWidth: 240, padding: "13px 16px", background: "#111117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, color: "#e2e2e2", fontSize: 13, fontFamily: "inherit" }}
           />
           <button
             onClick={askAI}
@@ -2032,12 +2032,12 @@ Provide a clear, informative answer in 2-4 paragraphs. Use bullet points or shor
         </div>
 
         {aiAnswer && (
-          <div style={{ marginTop: 16, padding: "18px 22px", background: "rgba(255, 48, 48, 0.05)", borderLeft: "3px solid #ff3030", borderRadius: 0, fontSize: 14, lineHeight: 1.7, color: "#e8e8e8", whiteSpace: "pre-wrap" }}>
+          <div style={{ marginTop: 16, padding: "18px 22px", background: "#16161E", borderLeft: "3px solid #F0B429", borderRadius: "0 8px 8px 0", fontSize: 13, lineHeight: 1.75, color: "#888", whiteSpace: "pre-wrap" }}>
             {aiAnswer}
           </div>
         )}
         {aiError && (
-          <div style={{ marginTop: 16, padding: 14, background: "rgba(255, 48, 48, 0.1)", border: "1px solid rgba(255, 48, 48, 0.3)", borderRadius: 6, fontSize: 13, color: "#ff9090" }}>
+          <div style={{ marginTop: 16, padding: 14, background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, fontSize: 13, color: "#c9922a" }}>
             {aiError}
           </div>
         )}
@@ -2102,7 +2102,7 @@ function StandingsBadge({ crest, name, size = 22 }) {
   const espn = getLogo(name);
   const url = stage === 0 ? (crest || espn) : stage === 1 ? espn : null;
   if (!url || stage >= 2) {
-    return <div style={{ width: size, height: size, borderRadius: "50%", background: "rgba(255,48,48,0.15)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trophy size={size * 0.5} /></div>;
+    return <div style={{ width: size, height: size, borderRadius: "50%", background: "rgba(240,180,41,0.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#F0B429" }}><Trophy size={size * 0.5} /></div>;
   }
   return <img key={url} src={url} alt={name} onError={() => setStage(s => s + 1)} style={{ width: size, height: size, objectFit: "contain", flexShrink: 0, background: "rgba(255,255,255,0.07)", borderRadius: "50%", padding: 1 }} />;
 }
@@ -2172,7 +2172,7 @@ function StandingsView({ lang }) {
       )}
 
       {error && (
-        <div style={{ padding: 16, background: "rgba(255,48,48,0.1)", border: "1px solid rgba(255,48,48,0.3)", borderRadius: 8, color: "#ff9090", fontSize: 13 }}>
+        <div style={{ padding: 16, background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, color: "#c9922a", fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -2295,9 +2295,9 @@ function StatCard({ label, value, color }) {
   return (
     <div style={{
       padding: "16px 18px",
-      background: "rgba(20, 0, 0, 0.6)",
-      border: "1px solid rgba(255, 48, 48, 0.2)",
-      borderRadius: 8,
+      background: "#111117",
+      border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: 10,
     }}>
       <div style={{ fontSize: 10, letterSpacing: "0.15em", color: "#8a8a8a", fontFamily: "inherit", marginBottom: 8, textTransform: "uppercase" }}>
         {label}
@@ -2314,7 +2314,7 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
   const liveData = liveScores?.get(`${match.home}|${match.away}`);
   return (
     <div className="match-row-wrap" style={{ marginBottom: 12 }}>
-      <div className="match-row" style={{ ...styles.matchRow, ...(isPredicting ? { opacity: 0.7 } : {}), marginBottom: 0, ...(isExpanded ? { borderColor: "rgba(255, 48, 48, 0.5)", borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : {}) }}>
+      <div className="match-row" style={{ ...styles.matchRow, ...(isPredicting ? { opacity: 0.7 } : {}), marginBottom: 0, ...(isExpanded ? { borderColor: "rgba(240,180,41,0.3)", borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : {}) }}>
         <div className="bm8-m-date" style={styles.mDate}>
           <div style={styles.mDateTop}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.6 }}>
@@ -2337,7 +2337,7 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
 
           {liveData ? (
             <div style={{ textAlign: "center" as const }}>
-              <div className="animate-pulse-slow" style={{ color: "#ff3030", fontSize: 10, fontWeight: 800, letterSpacing: 1, marginBottom: 2 }}>
+              <div className="animate-pulse-slow" style={{ color: "#FF3333", fontSize: 10, fontWeight: 800, letterSpacing: 1, marginBottom: 2 }}>
                 ● LIVE{liveData.minute ? ` ${liveData.minute}'` : liveData.liveStatus === "HALF_TIME" ? " HT" : ""}
               </div>
               <div style={styles.scoreBadge}>{liveData.homeScore} – {liveData.awayScore}</div>
@@ -2388,9 +2388,9 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
       {/* INLINE EXPANSION */}
       {isExpanded && expandedData && (
         <div style={{
-          padding: "20px 24px",
-          background: "rgba(20, 0, 0, 0.45)",
-          border: "1px solid rgba(255, 48, 48, 0.5)",
+          padding: "20px 22px",
+          background: "linear-gradient(180deg, rgba(240,180,41,0.03) 0%, transparent 40%)",
+          border: "1px solid rgba(240,180,41,0.25)",
           borderTop: "none",
           borderBottomLeftRadius: 10,
           borderBottomRightRadius: 10,
@@ -2403,7 +2403,7 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
             </div>
           )}
           {expandedData.error && (
-            <div style={{ padding: 16, background: "rgba(255, 48, 48, 0.1)", border: "1px solid rgba(255, 48, 48, 0.3)", borderRadius: 6, color: "#ff9090", fontSize: 13 }}>
+            <div style={{ padding: 16, background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, color: "#c9922a", fontSize: 13 }}>
               {t.failedMsg(expandedData.error)}
             </div>
           )}
@@ -2447,20 +2447,11 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-        <span style={{
-          fontSize: 10, padding: "3px 10px", borderRadius: 12,
-          background: riskColor + "20", color: riskColor,
-          border: `1px solid ${riskColor}50`,
-          letterSpacing: "0.15em", fontWeight: 700, textTransform: "uppercase",
-          fontFamily: "inherit",
-        }}>{risk} Risk</span>
-        <span style={{ fontSize: 11, color: "#8a8a8a", fontFamily: "inherit" }}>
-          {match.date} · {match.time || ""}
-        </span>
+      <div style={{ fontSize: 11, color: "#444", marginBottom: 14, letterSpacing: "0.05em" }}>
+        {match.date}{match.time ? ` · ${match.time}` : ""}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 16, alignItems: "center", marginBottom: 18, padding: "16px 12px", background: "rgba(255,255,255,0.02)", borderRadius: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 16, alignItems: "center", marginBottom: 18, padding: "16px 12px", background: "#111117", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
           <TeamBadge name={match.home} crest={match.homeCrest} size={50} />
           <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", textAlign: "center" }}>{match.home}</div>
@@ -2474,30 +2465,30 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
         </div>
       </div>
 
-      <div style={{ padding: "16px 18px", background: "rgba(255, 48, 48, 0.06)", borderLeft: "3px solid #ff3030", borderRadius: 4, marginBottom: 16 }}>
-        <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#ff3030", fontFamily: "inherit", marginBottom: 6, fontWeight: 600 }}>
-          ⚡ AI PREDICTION
+      <div style={{ padding: "16px 18px", background: "rgba(240,180,41,0.04)", borderLeft: "3px solid #F0B429", borderRadius: "0 8px 8px 0", marginBottom: 16 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "#F0B429", background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.2)", padding: "3px 10px", borderRadius: 20, letterSpacing: "0.1em", marginBottom: 10, fontWeight: 600 }}>
+          ▲ {winner === t.drawCap ? t.drawCap : `${winner} win predicted`}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
           <div>
-            <div style={{ fontFamily: "inherit", fontSize: 26, color: "#ff3030", lineHeight: 1.2 }}>
-              {winner === t.drawCap ? `${t.drawCap} (${predictedScore.home}-${predictedScore.away})` : `${winner} (${predictedScore.home}-${predictedScore.away})`}
+            <div style={{ fontFamily: "inherit", fontSize: 40, color: "#fff", fontWeight: 800, lineHeight: 1, letterSpacing: "0.05em" }}>
+              {predictedScore.home} — {predictedScore.away}
             </div>
-            <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 6, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ color: "#8a8a8a" }}>{lang === "zh" ? "赢率" : lang === "ms" ? "Kebarangkalian" : "WIN PROBABILITY"}</span>
-              <span style={{ color: "#555", fontSize: 10, padding: "1px 7px", border: "1px solid #333", borderRadius: 10 }}>
-                {lang === "zh" ? "AI信心" : lang === "ms" ? "Keyakinan AI" : "AI Confidence"} {confPct}%
-              </span>
+            <div style={{ fontSize: 10, color: "#444", marginTop: 6, letterSpacing: "0.15em", textTransform: "uppercase" as const }}>
+              Predicted Score
             </div>
           </div>
-          <div style={{ fontFamily: "inherit", fontSize: 40, color: "#ff3030", fontWeight: 800, lineHeight: 1 }}>
-            {winnerProb}%
+          <div style={{ textAlign: "right" as const }}>
+            <div style={{ fontFamily: "inherit", fontSize: 44, color: "#F0B429", fontWeight: 800, lineHeight: 1 }}>
+              {confPct}<span style={{ fontSize: 20 }}>%</span>
+            </div>
+            <div style={{ fontSize: 10, color: "#444", letterSpacing: "0.15em", textTransform: "uppercase" as const, marginTop: 2 }}>Confidence</div>
+            <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 4, display: "inline-block", marginTop: 6, letterSpacing: "0.1em", fontWeight: 700, background: riskColor + "18", color: riskColor, border: `1px solid ${riskColor}40` }}>{risk} RISK</span>
           </div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 18, padding: "14px 16px", background: "rgba(255,255,255,0.025)", borderRadius: 6, fontSize: 13, lineHeight: 1.7, color: "#c8c8c8" }}>
-        <span style={{ color: "#ff3030", fontWeight: 600, fontFamily: "inherit", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>Analysis: </span>
+      <div style={{ marginBottom: 18, padding: "14px 16px", background: "#16161E", borderLeft: "3px solid #F0B429", borderRadius: "0 8px 8px 0", fontSize: 13, lineHeight: 1.75, color: "#888" }}>
         {reasoning}
       </div>
 
@@ -2514,9 +2505,9 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
           📊 {t.outcomeProb}
           <span style={{ fontSize: 9, color: "#ff3030", letterSpacing: "0.15em" }}>(AI ENHANCED)</span>
         </div>
-        <ProbBar label={match.home} value={prob.home} color="#ff3030" />
-        <ProbBar label={t.drawCap} value={prob.draw} color="#888" />
-        <ProbBar label={match.away} value={prob.away} color="#e8e8e8" />
+        <ProbBar label={match.home} value={prob.home} color="#F0B429" />
+        <ProbBar label={t.drawCap} value={prob.draw} color="#444" />
+        <ProbBar label={match.away} value={prob.away} color="#FF3333" />
       </div>
 
       {(estGoals || bttsChance || matchType) && (
@@ -2558,9 +2549,9 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {playerWatch.map((p: any, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 10, padding: "10px 14px", background: "rgba(255,255,255,0.03)", borderRadius: 6, borderLeft: `3px solid ${p.team === "home" ? "#ff3030" : "#60a5fa"}` }}>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 10, padding: "10px 14px", background: "#111117", borderRadius: 8, borderLeft: `3px solid ${p.team === "home" ? "#F0B429" : "#60a5fa"}` }}>
                 <div style={{ textAlign: "center", minWidth: 44 }}>
-                  <div style={{ fontSize: 13, color: p.team === "home" ? "#ff3030" : "#60a5fa" }}>⭐</div>
+                  <div style={{ fontSize: 13, color: p.team === "home" ? "#F0B429" : "#60a5fa" }}>⭐</div>
                   <div style={{ fontSize: 9, color: "#555", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>{p.team === "home" ? t.homeTeam : t.awayTeam}</div>
                 </div>
                 <div>
@@ -2583,7 +2574,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
             {injuries.map((p: any, i: number) => {
               const statusColor = p.status === "Out" ? "#ff3030" : p.status === "Suspended" ? "#facc15" : "#f97316";
               return (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 10, padding: "10px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 6, borderLeft: `3px solid ${statusColor}` }}>
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 10, padding: "10px 14px", background: "#111117", borderRadius: 8, borderLeft: `3px solid ${statusColor}` }}>
                   <div style={{ textAlign: "center", minWidth: 44 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: statusColor, padding: "2px 6px", background: statusColor + "20", borderRadius: 4 }}>{p.status}</div>
                     <div style={{ fontSize: 9, color: "#555", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 4 }}>{p.team === "home" ? t.homeTeam : t.awayTeam}</div>
@@ -2600,8 +2591,8 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
       )}
 
       {(teamStats?.home || teamStats?.away || oddsFound?.homeOdds) && (
-        <div style={{ marginBottom: 18, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6 }}>
-          <div style={{ fontSize: 10, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8, fontWeight: 700 }}>📡 Data Sources</div>
+        <div style={{ marginBottom: 18, padding: "12px 16px", background: "rgba(240,180,41,0.03)", border: "1px solid rgba(240,180,41,0.08)", borderRadius: 8 }}>
+          <div style={{ fontSize: 9, color: "#F0B429", letterSpacing: "0.25em", textTransform: "uppercase", marginBottom: 8, fontWeight: 700, opacity: 0.5 }}>📡 Data Sources</div>
           {oddsFound?.homeOdds && (
             <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 6 }}>
               <span style={{ color: "#facc15" }}>💰</span> Bookmaker odds: Home <span style={{ color: "#e2e2e2" }}>{oddsFound.homeOdds}</span> · Draw <span style={{ color: "#e2e2e2" }}>{oddsFound.drawOdds}</span> · Away <span style={{ color: "#e2e2e2" }}>{oddsFound.awayOdds}</span>
@@ -2609,7 +2600,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
           )}
           {teamStats?.home && (
             <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>
-              <span style={{ color: "#ff3030" }}>🏠</span> {match.home}: {[
+              <span style={{ color: "#F0B429" }}>🏠</span> {match.home}: {[
                 teamStats.home.possession != null && `${teamStats.home.possession}% poss`,
                 teamStats.home.onTargetPG != null && `${teamStats.home.onTargetPG} SoT/g`,
                 teamStats.home.bigChancesPG != null && `${teamStats.home.bigChancesPG} BC/g`,
@@ -2663,18 +2654,18 @@ function FormBadges({ form }) {
 
 function OddsCell({ label, odd }) {
   return (
-    <div style={{ padding: "12px 14px", background: "rgba(255, 48, 48, 0.05)", border: "1px solid rgba(255, 48, 48, 0.2)", borderRadius: 6, textAlign: "center" }}>
-      <div style={{ fontSize: 10, color: "#8a8a8a", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "inherit" }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: "#ff3030", fontFamily: "inherit" }}>{odd}</div>
+    <div style={{ padding: "14px 10px", background: "#16161E", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, textAlign: "center", transition: "border-color 0.15s" }}>
+      <div style={{ fontSize: 10, color: "#444", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "inherit" }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "#F0B429", fontFamily: "inherit" }}>{odd}</div>
     </div>
   );
 }
 
 function MiniStatCard({ icon, label, value }) {
   return (
-    <div style={{ padding: "12px 10px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, textAlign: "center" }}>
-      <div style={{ fontSize: 10, color: "#8a8a8a", letterSpacing: "0.1em", marginBottom: 6, textTransform: "uppercase", fontFamily: "inherit" }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>
+    <div style={{ padding: "12px 10px", background: "#16161E", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 8, textAlign: "center" }}>
+      <div style={{ fontSize: 10, color: "#444", letterSpacing: "0.1em", marginBottom: 6, textTransform: "uppercase", fontFamily: "inherit" }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0" }}>
         <span style={{ marginRight: 4 }}>{icon}</span>{value}
       </div>
     </div>
@@ -2729,12 +2720,12 @@ function RecentAnalysis({ match, result, t }) {
 
 function ProbBar({ label, value, color }) {
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 13, color: "#e8e8e8" }}>{label}</span>
-        <span style={{ fontSize: 20, fontWeight: 600, color: "#fff" }}>{Math.round(value)}%</span>
+        <span style={{ fontSize: 12, color: "#666" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#777" }}>{Math.round(value)}%</span>
       </div>
-      <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+      <div style={{ width: "100%", height: 5, background: "#16161E", borderRadius: 3, overflow: "hidden" }}>
         <div className="bar-fill" style={{ height: "100%", width: `${value}%`, background: color, borderRadius: 3 }} />
       </div>
     </div>
@@ -2742,9 +2733,9 @@ function ProbBar({ label, value, color }) {
 }
 
 function FactorRow({ factor, match }) {
-  const tagColor = factor.favors === "home" ? "#ff3030" : factor.favors === "away" ? "#fff" : "#8a8a8a";
-  const tagBg = factor.favors === "home" ? "rgba(255, 48, 48, 0.15)" :
-    factor.favors === "away" ? "rgba(255, 255, 255, 0.1)" : "rgba(138, 138, 138, 0.15)";
+  const tagColor = factor.favors === "home" ? "#F0B429" : factor.favors === "away" ? "#60a5fa" : "#666";
+  const tagBg = factor.favors === "home" ? "rgba(240,180,41,0.12)" :
+    factor.favors === "away" ? "rgba(96,165,250,0.12)" : "rgba(100,100,100,0.12)";
   const arrow = factor.favors === "home" ? `← ${match.home}` :
     factor.favors === "away" ? `${match.away} →` : "—";
   return (
@@ -2759,14 +2750,19 @@ function FactorRow({ factor, match }) {
 }
 
 const globalCSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #000; }
+  body { background: #0A0A0F; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fillBar { from { width: 0; } }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 48, 48, 0.4); } 50% { box-shadow: 0 0 30px rgba(255, 48, 48, 0.7); } }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes chatBounce {
+    0%, 100% { transform: scale(1); }
+    30%      { transform: scale(1.2); }
+    60%      { transform: scale(0.95); }
+  }
   @keyframes octopusPlay {
     0%   { transform: translateY(0px)   rotate(-3deg) scaleX(1);    }
     20%  { transform: translateY(-10px) rotate(0deg)  scaleX(1.04); }
@@ -2776,24 +2772,19 @@ const globalCSS = `
     100% { transform: translateY(0px)   rotate(-3deg) scaleX(1);    }
   }
   @keyframes octopusGlow {
-    0%, 100% { filter: drop-shadow(0 0 12px rgba(255,48,48,0.7)); }
-    50%       { filter: drop-shadow(0 0 24px rgba(255,48,48,1));   }
-  }
-  @keyframes chatBounce {
-    0%, 100% { transform: scale(1); }
-    30%      { transform: scale(1.2); }
-    60%      { transform: scale(0.95); }
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(240,180,41,0.5)); }
+    50%       { filter: drop-shadow(0 0 22px rgba(240,180,41,0.9)); }
   }
   .chat-icon { animation: chatBounce 1.8s ease-in-out infinite; }
   .octopus-btn { animation: octopusPlay 3.5s ease-in-out infinite, octopusGlow 2s ease-in-out infinite; }
   .octopus-btn:hover { animation-play-state: paused; transform: scale(1.12); transition: transform 0.2s; }
   .bar-fill { animation: fillBar 1s cubic-bezier(0.16, 1, 0.3, 1); }
   .pulsing { animation: pulse 1.4s ease-in-out infinite; }
-  .match-row:hover { border-color: rgba(255, 48, 48, 0.6) !important; background: rgba(255, 48, 48, 0.04) !important; }
-  .refresh-btn:hover:not(:disabled) { background: #ff3030 !important; color: #fff !important; box-shadow: 0 0 24px rgba(255, 48, 48, 0.5); }
+  .match-row:hover { border-color: rgba(240, 180, 41, 0.35) !important; background: rgba(240, 180, 41, 0.025) !important; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .refresh-btn:hover:not(:disabled) { background: #F0B429 !important; color: #000 !important; box-shadow: 0 0 20px rgba(240,180,41,0.4); }
   .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .predict-btn:hover:not(:disabled) { background: #e60000 !important; box-shadow: 0 0 16px rgba(255, 48, 48, 0.6); }
-  input:focus { outline: none; border-color: rgba(255, 48, 48, 0.6) !important; }
+  .predict-btn:hover:not(:disabled) { box-shadow: 0 0 20px rgba(240,180,41,0.5) !important; transform: translateY(-1px); }
+  input:focus { outline: none; border-color: rgba(240, 180, 41, 0.5) !important; }
 
   .mobile-menu-btn { display: none; }
   .lang-selector-desktop { display: flex; }
@@ -2823,7 +2814,7 @@ const globalCSS = `
       justify-content: space-between !important;
       align-items: center !important;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 48, 48, 0.15);
+      border-bottom: 1px solid rgba(240, 180, 41, 0.1);
     }
     .bm8-m-teams {
       grid-template-columns: 1fr auto 1fr !important;
@@ -2834,7 +2825,7 @@ const globalCSS = `
     .bm8-m-right {
       justify-content: space-between !important;
       padding-top: 10px;
-      border-top: 1px solid rgba(255, 48, 48, 0.15);
+      border-top: 1px solid rgba(240, 180, 41, 0.1);
     }
     .bm8-predict-btn { padding: 8px 16px !important; font-size: 12px !important; }
     .bm8-modal-overlay { padding: 20px 12px !important; }
@@ -2848,131 +2839,129 @@ const globalCSS = `
 `;
 
 const styles = {
-  app: { minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "'Poppins', 'Noto Sans SC', -apple-system, sans-serif" },
+  app: { minHeight: "100vh", background: "#0A0A0F", color: "#e2e2e2", fontFamily: "-apple-system, 'Inter', 'Segoe UI', 'Noto Sans SC', sans-serif" },
 
-  topNav: { background: "#000", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "16px 0", position: "sticky", top: 0, zIndex: 50 },
-  navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 32px", display: "flex", alignItems: "center", gap: 24 },
-  brandBlock: { display: "flex", alignItems: "center", gap: 14, flexShrink: 0 },
-  logoImg: { height: 72, width: "auto", display: "block" },
-  tagline: { fontSize: 15, fontWeight: 600, color: "#e8e8e8", whiteSpace: "nowrap" },
+  topNav: { background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "0", position: "sticky", top: 0, zIndex: 50, height: 56 },
+  navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
+  brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
+  logoImg: { height: 36, width: "auto", display: "block" },
+  tagline: { fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "0.1em", whiteSpace: "nowrap" as const },
 
-  navLinks: { display: "flex", gap: 32, flex: 1, justifyContent: "center" },
-  navLink: { background: "transparent", border: "none", color: "#8a8a8a", fontSize: 15, fontFamily: "inherit", cursor: "pointer", padding: "8px 0", position: "relative", transition: "color 0.2s", whiteSpace: "nowrap" },
-  navLinkActive: { color: "#ff3030", fontWeight: 500 },
-  navLinkUnderline: { position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: "#ff3030", borderRadius: 2 },
+  navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
+  navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
+  navLinkActive: { color: "#F0B429", background: "rgba(240,180,41,0.12)", fontWeight: 500 },
+  navLinkUnderline: { display: "none" },
 
   menuBtn: { display: "none", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto" },
 
-  mobileMenu: { position: "absolute", top: "100%", left: 0, right: 0, background: "#000", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 24px", display: "flex", flexDirection: "column", gap: 4 },
-  mobileNavLink: { background: "transparent", border: "none", color: "#8a8a8a", fontSize: 15, fontFamily: "inherit", cursor: "pointer", padding: "12px 8px", textAlign: "left", borderRadius: 4 },
-  mobileNavLinkActive: { color: "#ff3030", background: "rgba(255, 48, 48, 0.1)", fontWeight: 500 },
+  mobileMenu: { position: "absolute", top: "100%", left: 0, right: 0, background: "#0A0A0F", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 24px", display: "flex", flexDirection: "column", gap: 4 },
+  mobileNavLink: { background: "transparent", border: "none", color: "#8a8a8a", fontSize: 14, fontFamily: "inherit", cursor: "pointer", padding: "12px 8px", textAlign: "left", borderRadius: 6 },
+  mobileNavLinkActive: { color: "#F0B429", background: "rgba(240,180,41,0.1)", fontWeight: 500 },
 
-  langSelector: { display: "flex", alignItems: "center", gap: 4, padding: "4px 6px 4px 12px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 4, flexShrink: 0 },
-  langBtn: { padding: "5px 12px", background: "transparent", border: "none", color: "#8a8a8a", fontSize: 12, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 600, cursor: "pointer", borderRadius: 3, transition: "all 0.2s" },
-  langBtnActive: { background: "#ff3030", color: "#fff" },
+  langSelector: { display: "flex", alignItems: "center", gap: 4, padding: "4px 6px 4px 10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, flexShrink: 0 },
+  langBtn: { padding: "4px 9px", background: "transparent", border: "none", color: "#555", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", fontWeight: 600, cursor: "pointer", borderRadius: 4, transition: "all 0.15s" },
+  langBtnActive: { background: "rgba(240,180,41,0.15)", color: "#F0B429" },
 
-  hero: { maxWidth: 1400, margin: "0 auto", padding: "48px 32px", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 40, alignItems: "center", minHeight: 500 },
+  hero: { maxWidth: 1400, margin: "0 auto", padding: "48px 24px", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 40, alignItems: "center", minHeight: 460, position: "relative", overflow: "hidden" },
   heroContent: {},
-  heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 12, letterSpacing: "0.2em", color: "#ff3030", fontFamily: "inherit", marginBottom: 20, fontWeight: 500 },
-  heroDot: { width: 8, height: 8, borderRadius: "50%", background: "#ff3030", boxShadow: "0 0 12px #ff3030" },
-  heroTitle: { fontFamily: "inherit", fontSize: "clamp(40px, 5.5vw, 64px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 24, color: "#fff" },
-  heroEm: { fontStyle: "italic", color: "#ff3030" },
-  heroSub: { fontSize: 15, lineHeight: 1.6, color: "#9a9a9a", maxWidth: 540 },
-  heroVisual: { width: "100%", minHeight: 420, display: "flex", alignItems: "center", justifyContent: "center" },
-  footballImg: { width: "100%", maxWidth: 800, height: "auto", objectFit: "contain", display: "block" },
+  heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 10, letterSpacing: "0.35em", color: "#F0B429", fontFamily: "inherit", marginBottom: 18, fontWeight: 500, textTransform: "uppercase" as const, opacity: 0.8 },
+  heroDot: { width: 7, height: 7, borderRadius: "50%", background: "#F0B429", boxShadow: "0 0 8px rgba(240,180,41,0.6)" },
+  heroTitle: { fontFamily: "inherit", fontSize: "clamp(36px, 5vw, 58px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 18, color: "#fff" },
+  heroEm: { fontStyle: "italic", background: "linear-gradient(90deg, #F0B429, #ff9500)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" },
+  heroSub: { fontSize: 14, lineHeight: 1.65, color: "#555", maxWidth: 480 },
+  heroVisual: { width: "100%", minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center" },
+  footballImg: { width: "100%", maxWidth: 700, height: "auto", objectFit: "contain", display: "block" },
 
-  main: { maxWidth: 1400, margin: "0 auto", padding: "0 32px 48px" },
+  main: { maxWidth: 1400, margin: "0 auto", padding: "0 24px 48px" },
 
-  searchRow: { display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" },
-  searchWrap: { position: "relative", flex: 1, minWidth: 300 },
-  searchIcon: { position: "absolute", left: 18, top: "50%", transform: "translateY(-50%)", color: "#6a6a6a", pointerEvents: "none" },
-  searchInput: { width: "100%", padding: "16px 50px 16px 50px", background: "#0a0a0a", border: "1px solid rgba(255, 48, 48, 0.25)", borderRadius: 6, color: "#fff", fontSize: 14, fontFamily: "inherit", transition: "all 0.2s" },
+  searchRow: { display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" },
+  searchWrap: { position: "relative", flex: 1, minWidth: 280 },
+  searchIcon: { position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#555", pointerEvents: "none" },
+  searchInput: { width: "100%", padding: "13px 48px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#e2e2e2", fontSize: 13, fontFamily: "inherit", transition: "all 0.15s" },
   searchClear: { position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 26, height: 26, padding: 0, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "#8a8a8a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
-  refreshBtn: { display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 28px", background: "transparent", border: "1.5px solid #ff3030", color: "#ff3030", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", borderRadius: 6, transition: "all 0.2s", whiteSpace: "nowrap" },
+  refreshBtn: { display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 22px", background: "transparent", border: "1.5px solid rgba(240,180,41,0.5)", color: "#F0B429", fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", borderRadius: 8, transition: "all 0.15s", whiteSpace: "nowrap" as const },
 
-  filterTabs: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, marginBottom: 20, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, overflow: "hidden" },
-  filterTab: { padding: "14px 8px", background: "#111", border: "none", borderRight: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 500, color: "#8a8a8a", fontFamily: "inherit", cursor: "pointer", transition: "all 0.2s", textAlign: "center" as const },
-  filterTabActive: { background: "#ff3030", color: "#fff", fontWeight: 600 },
+  filterTabs: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, marginBottom: 18, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, overflow: "hidden" },
+  filterTab: { padding: "12px 8px", background: "#111117", border: "none", borderRight: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 500, color: "#555", fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", textAlign: "center" as const },
+  filterTabActive: { background: "rgba(240,180,41,0.1)", color: "#F0B429", fontWeight: 600 },
 
-  leagueRow: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" },
-  leagueChip: { padding: "8px 18px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, fontSize: 13, color: "#8a8a8a", fontFamily: "inherit", cursor: "pointer", transition: "all 0.2s" },
-  leagueChipActive: { borderColor: "#ff3030", color: "#ff3030" },
-  filterRow: { display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" as const },
-  filterGroup: { display: "flex", flexDirection: "column" as const, gap: 6, flex: 1, minWidth: 200 },
-  filterLabel: { fontSize: 12, fontWeight: 600, color: "#a0a0a0", letterSpacing: "0.05em" },
-  filterSelect: { padding: "12px 16px", background: "#111", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer", appearance: "auto" as const },
+  leagueRow: { display: "flex", gap: 6, marginBottom: 18, flexWrap: "wrap" },
+  leagueChip: { padding: "6px 14px", background: "transparent", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, fontSize: 12, color: "#555", fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s" },
+  leagueChipActive: { borderColor: "#F0B429", color: "#F0B429", background: "rgba(240,180,41,0.08)" },
+  filterRow: { display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" as const },
+  filterGroup: { display: "flex", flexDirection: "column" as const, gap: 6, flex: 1, minWidth: 180 },
+  filterLabel: { fontSize: 11, fontWeight: 600, color: "#555", letterSpacing: "0.05em" },
+  filterSelect: { padding: "10px 14px", background: "#111117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, color: "#e2e2e2", fontSize: 13, fontFamily: "inherit", cursor: "pointer", appearance: "auto" as const },
 
-  statusBar: { fontSize: 12, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 20, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.05)" },
+  statusBar: { fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#444" },
 
-  matchList: { display: "flex", flexDirection: "column", gap: 12 },
-  matchRow: { display: "grid", gridTemplateColumns: "120px 1fr 200px", gap: 20, alignItems: "center", padding: "20px 28px", background: "rgba(20, 0, 0, 0.6)", border: "1px solid rgba(255, 48, 48, 0.2)", borderRadius: 10, transition: "all 0.2s", animation: "fadeUp 0.4s ease-out both", overflow: "hidden" },
+  matchList: { display: "flex", flexDirection: "column", gap: 8 },
+  matchRow: { display: "grid", gridTemplateColumns: "120px 1fr 200px", gap: 20, alignItems: "center", padding: "18px 22px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, transition: "all 0.15s", animation: "fadeUp 0.4s ease-out both", overflow: "hidden" },
   mDate: { display: "flex", flexDirection: "column", gap: 6 },
-  mDateTop: { display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#c0c0c0" },
-  mTime: { fontSize: 20, fontWeight: 600, color: "#ff3030", fontFamily: "inherit" },
+  mDateTop: { display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#555" },
+  mTime: { fontSize: 18, fontWeight: 700, color: "#F0B429", fontFamily: "inherit" },
 
   mTeams: { display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 20, alignItems: "center", minWidth: 0 },
-  mTeamSide: { display: "flex", alignItems: "center", gap: 16, minWidth: 0 },
-  mTeamName: { fontFamily: "inherit", fontSize: 22, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  mTeamSide: { display: "flex", alignItems: "center", gap: 14, minWidth: 0 },
+  mTeamName: { fontFamily: "inherit", fontSize: 20, color: "#ccc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 },
 
   vsCircle: {
-    width: 52, height: 52, borderRadius: "50%",
-    background: "#000",
-    border: "2px solid #ff3030",
+    width: 46, height: 46, borderRadius: 8,
+    background: "#16161E",
+    border: "1px solid rgba(255,255,255,0.07)",
     display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: "0 0 20px rgba(255, 48, 48, 0.5), inset 0 0 10px rgba(255, 48, 48, 0.2)",
-    animation: "glow 2s ease-in-out infinite",
     flexShrink: 0,
   },
-  vsCircleText: { fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#ff3030", letterSpacing: "0.05em" },
+  vsCircleText: { fontFamily: "inherit", fontSize: 10, fontWeight: 700, color: "#333", letterSpacing: "0.2em" },
 
-  scoreBadge: { fontFamily: "inherit", fontSize: 26, color: "#fff", padding: "8px 18px", background: "rgba(255, 48, 48, 0.15)", border: "1px solid rgba(255, 48, 48, 0.4)", borderRadius: 6, minWidth: 90, textAlign: "center", flexShrink: 0 },
+  scoreBadge: { fontFamily: "inherit", fontSize: 24, color: "#fff", fontWeight: 700, padding: "7px 16px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, minWidth: 90, textAlign: "center", flexShrink: 0 },
 
-  mRight: { display: "flex", alignItems: "center", gap: 12, justifyContent: "flex-end" },
-  mLeagueTag: { fontSize: 11, padding: "5px 12px", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#a0a0a0" },
-  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 22px", background: "#ff3030", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", transition: "all 0.2s" },
+  mRight: { display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" },
+  mLeagueTag: { fontSize: 10, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#444" },
+  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" },
 
-  empty: { textAlign: "center", padding: 60, color: "#6a6a6a", fontSize: 14 },
+  empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
 
-  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "40px 16px", overflowY: "auto" },
-  modalPanel: { background: "#0a0a0a", border: "1px solid rgba(255, 48, 48, 0.3)", borderRadius: 10, width: "100%", maxWidth: 760, boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255, 48, 48, 0.15)", animation: "fadeUp 0.3s ease-out" },
-  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)" },
-  modalLabel: { display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, letterSpacing: "0.25em", color: "#ff3030", fontFamily: "inherit", fontWeight: 600 },
-  closeBtn: { background: "transparent", border: "none", color: "#8a8a8a", cursor: "pointer", padding: 6, display: "flex", borderRadius: 4 },
-  modalBody: { padding: "28px" },
-  loadingBox: { display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "60px 20px", fontSize: 14, color: "#a0a0a0" },
-  errorBox: { padding: 18, background: "rgba(255, 48, 48, 0.1)", border: "1px solid rgba(255, 48, 48, 0.3)", borderRadius: 6, fontSize: 13, color: "#ff9090" },
+  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "40px 16px", overflowY: "auto" },
+  modalPanel: { background: "#111117", border: "1px solid rgba(240,180,41,0.15)", borderRadius: 12, width: "100%", maxWidth: 760, boxShadow: "0 20px 60px rgba(0,0,0,0.6)", animation: "fadeUp 0.3s ease-out" },
+  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)" },
+  modalLabel: { display: "inline-flex", alignItems: "center", gap: 8, fontSize: 10, letterSpacing: "0.25em", color: "#F0B429", fontFamily: "inherit", fontWeight: 600 },
+  closeBtn: { background: "transparent", border: "none", color: "#555", cursor: "pointer", padding: 6, display: "flex", borderRadius: 4 },
+  modalBody: { padding: "24px" },
+  loadingBox: { display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "60px 20px", fontSize: 14, color: "#666" },
+  errorBox: { padding: 16, background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, fontSize: 13, color: "#F0B429" },
 
   confidenceRow: { display: "flex", justifyContent: "flex-end", marginBottom: 16 },
   confidenceBadge: { fontSize: 10, letterSpacing: "0.3em", fontFamily: "inherit", fontWeight: 700, padding: "5px 14px", border: "1px solid", borderRadius: 3 },
 
-  scoreboard: { display: "flex", alignItems: "center", padding: "36px 20px", background: "linear-gradient(135deg, rgba(255, 48, 48, 0.08) 0%, rgba(0,0,0,0) 100%)", border: "1px solid rgba(255, 48, 48, 0.2)", borderRadius: 8, marginBottom: 12, gap: 16 },
+  scoreboard: { display: "flex", alignItems: "center", padding: "32px 20px", background: "linear-gradient(135deg, rgba(240,180,41,0.05) 0%, transparent 60%)", border: "1px solid rgba(240,180,41,0.12)", borderRadius: 10, marginBottom: 12, gap: 16 },
   sbTeam: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, textAlign: "center" },
-  sbName: { fontFamily: "inherit", fontSize: 17, lineHeight: 1.2, color: "#fff" },
+  sbName: { fontFamily: "inherit", fontSize: 16, lineHeight: 1.2, color: "#e0e0e0", fontWeight: 600 },
   sbNumbers: { display: "flex", alignItems: "center", gap: 14, fontFamily: "inherit", flex: 1.2, justifyContent: "center" },
-  sbNum: { fontSize: "clamp(56px, 10vw, 96px)", lineHeight: 1, color: "#fff" },
-  sbDash: { fontSize: "clamp(40px, 8vw, 68px)", color: "#ff3030", lineHeight: 1 },
-  predLabel: { fontSize: 11, letterSpacing: "0.3em", color: "#8a8a8a", fontFamily: "inherit", textAlign: "center", marginBottom: 32 },
+  sbNum: { fontSize: "clamp(52px, 9vw, 88px)", lineHeight: 1, color: "#fff", fontWeight: 800 },
+  sbDash: { fontSize: "clamp(38px, 7vw, 62px)", color: "#F0B429", lineHeight: 1 },
+  predLabel: { fontSize: 10, letterSpacing: "0.3em", color: "#444", fontFamily: "inherit", textAlign: "center", marginBottom: 28, textTransform: "uppercase" as const },
 
-  section: { marginBottom: 28 },
-  sectionTitle: { fontSize: 11, letterSpacing: "0.25em", color: "#8a8a8a", fontFamily: "inherit", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.08)", fontWeight: 600 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 10, letterSpacing: "0.25em", color: "#555", fontFamily: "inherit", marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.05)", fontWeight: 700, textTransform: "uppercase" as const },
 
-  reasoningBox: { padding: "18px 22px", background: "rgba(255, 48, 48, 0.05)", borderLeft: "3px solid #ff3030", borderRadius: 0, fontSize: 15, lineHeight: 1.7, color: "#e8e8e8", fontStyle: "italic", fontFamily: "inherit" },
-  factorRow: { padding: "16px 20px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, marginBottom: 8 },
+  reasoningBox: { padding: "16px 18px", background: "#16161E", borderLeft: "3px solid #F0B429", borderRadius: "0 8px 8px 0", fontSize: 13, lineHeight: 1.75, color: "#888" },
+  factorRow: { padding: "14px 16px", background: "#111117", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 8, marginBottom: 8 },
   factorHead: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" },
-  factorLabel: { fontFamily: "inherit", fontSize: 16, color: "#fff" },
-  factorTag: { fontSize: 10, letterSpacing: "0.15em", padding: "3px 9px", borderRadius: 3, fontFamily: "inherit", fontWeight: 600 },
-  factorDetail: { fontSize: 13, lineHeight: 1.6, color: "#9a9a9a" },
-  watchOutBox: { padding: "16px 20px", background: "rgba(255, 48, 48, 0.08)", border: "1px solid rgba(255, 48, 48, 0.3)", borderRadius: 6, fontSize: 14, lineHeight: 1.6, color: "#ffb5b5" },
-  verdictBox: { padding: "18px 22px", background: "rgba(255, 48, 48, 0.06)", border: "1px solid rgba(255, 48, 48, 0.2)", borderRadius: 6, fontSize: 15, lineHeight: 1.6, color: "#fff" },
-  starPlayerBox: { padding: "18px 22px", background: "rgba(250, 204, 21, 0.06)", border: "1px solid rgba(250, 204, 21, 0.2)", borderRadius: 6 },
-  spName: { fontFamily: "inherit", fontSize: 20, color: "#fff", marginBottom: 6 },
-  spTeam: { fontSize: 12, color: "#8a8a8a", fontFamily: "inherit", letterSpacing: "0.1em", fontStyle: "normal" },
-  spWhy: { fontSize: 13, lineHeight: 1.6, color: "#c0c0c0" },
-  momentRow: { padding: "14px 18px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, marginBottom: 6 },
-  momentLabel: { fontFamily: "inherit", fontSize: 15, color: "#fff", marginBottom: 4 },
-  momentDetail: { fontSize: 13, lineHeight: 1.5, color: "#9a9a9a" },
-  contextBox: { padding: "16px 20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, fontSize: 13, lineHeight: 1.6, color: "#c0c0c0" },
+  factorLabel: { fontFamily: "inherit", fontSize: 14, color: "#e0e0e0", fontWeight: 600 },
+  factorTag: { fontSize: 10, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: 4, fontFamily: "inherit", fontWeight: 600 },
+  factorDetail: { fontSize: 12, lineHeight: 1.6, color: "#666" },
+  watchOutBox: { padding: "14px 18px", background: "rgba(240,180,41,0.05)", border: "1px solid rgba(240,180,41,0.18)", borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: "#b09050" },
+  verdictBox: { padding: "16px 18px", background: "rgba(240,180,41,0.04)", border: "1px solid rgba(240,180,41,0.1)", borderRadius: 8, fontSize: 14, lineHeight: 1.65, color: "#e0e0e0" },
+  starPlayerBox: { padding: "16px 18px", background: "rgba(240,180,41,0.05)", border: "1px solid rgba(240,180,41,0.12)", borderRadius: 8 },
+  spName: { fontFamily: "inherit", fontSize: 17, color: "#fff", marginBottom: 4, fontWeight: 700 },
+  spTeam: { fontSize: 11, color: "#555", fontFamily: "inherit", letterSpacing: "0.1em", fontStyle: "normal", fontWeight: 400 },
+  spWhy: { fontSize: 12, lineHeight: 1.6, color: "#777" },
+  momentRow: { padding: "12px 16px", background: "#16161E", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 6 },
+  momentLabel: { fontFamily: "inherit", fontSize: 13, color: "#e0e0e0", marginBottom: 3, fontWeight: 600 },
+  momentDetail: { fontSize: 12, lineHeight: 1.5, color: "#666" },
+  contextBox: { padding: "14px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: "#777" },
 
-  footer: { maxWidth: 1400, margin: "60px auto 0", padding: "24px 32px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "center", alignItems: "center", gap: 14, fontSize: 10, letterSpacing: "0.2em", color: "#5a5a5a", fontFamily: "inherit", flexWrap: "wrap" },
-  footerDot: { fontSize: 6, color: "#ff3030" },
+  footer: { maxWidth: 1400, margin: "60px auto 0", padding: "20px 24px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "center", alignItems: "center", gap: 12, fontSize: 10, letterSpacing: "0.2em", color: "#333", fontFamily: "inherit", flexWrap: "wrap" },
+  footerDot: { fontSize: 5, color: "#F0B429" },
 };
