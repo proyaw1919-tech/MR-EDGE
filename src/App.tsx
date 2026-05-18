@@ -995,7 +995,7 @@ Rules:
         <div className="bm8-nav-inner" style={styles.navInner}>
           {/* Logo */}
           <div style={styles.brandBlock}>
-            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 36, width: "auto", display: "block", flexShrink: 0 }} />
+            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 40, width: "auto", display: "block", flexShrink: 0 }} />
             {lang === "zh"
               ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
               : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
@@ -2698,8 +2698,8 @@ const globalCSS = `
     /* Nav */
     .bm8-nav-inner { padding: 0 14px !important; gap: 10px !important; }
 
-    /* Hero — compact strip on mobile */
-    .bm8-hero { padding: 18px 16px 14px !important; min-height: unset !important; }
+    /* Hero — keep enough height so background-size:cover shows same zoom as desktop */
+    .bm8-hero { padding: 28px 16px 24px !important; min-height: 220px !important; }
     .bm8-hero-title { font-size: clamp(22px, 6vw, 30px) !important; margin-bottom: 8px !important; }
     .bm8-hero-sub { font-size: 12px !important; max-width: 100% !important; }
     .bm8-hero-label { font-size: 10px !important; margin-bottom: 10px !important; }
@@ -2781,7 +2781,7 @@ const styles = {
   navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
   brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   logoImg: { height: 36, width: "auto", display: "block" },
-  tagline: { fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
+  tagline: { fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
 
   navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
   navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
