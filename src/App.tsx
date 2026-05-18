@@ -1180,7 +1180,7 @@ Rules:
             </div>
 
             {/* Filter tabs */}
-            <div style={styles.filterTabs}>
+            <div className="bm8-filter-tabs" style={styles.filterTabs}>
               {[
                 { key: "upcoming", label: t.upcoming },
                 { key: "today", label: (t as any).today },
@@ -1189,6 +1189,7 @@ Rules:
                 <button
                   key={tab.key}
                   onClick={() => { setFilter(tab.key); setExpandedIds(new Set()); }}
+                  className="bm8-filter-tab"
                   style={{ ...styles.filterTab, ...(filter === tab.key ? styles.filterTabActive : {}) }}
                 >
                   {tab.label}
@@ -1197,7 +1198,7 @@ Rules:
             </div>
 
             {/* Filter dropdowns */}
-            <div style={styles.filterRow}>
+            <div className="bm8-filter-row" style={styles.filterRow}>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>League</label>
                 <select value={league} onChange={(e) => { setLeague(e.target.value); setExpandedIds(new Set()); }} style={styles.filterSelect}>
@@ -1227,7 +1228,7 @@ Rules:
               </div>
             </div>
 
-            <div style={{ ...styles.statusBar, color: statusError ? "#ff6b6b" : "#8a8a8a", ...(refreshing ? { animation: "pulse 1.4s ease-in-out infinite" } : {}) }}>
+            <div className="bm8-status-bar" style={{ ...styles.statusBar, color: statusError ? "#ff6b6b" : "#8a8a8a", ...(refreshing ? { animation: "pulse 1.4s ease-in-out infinite" } : {}) }}>
               {statusMsg}
             </div>
 
@@ -1244,7 +1245,7 @@ Rules:
                   });
                   return Object.entries(grouped).map(([date, dateMatches]) => (
                     <div key={date}>
-                      <div style={styles.dateHeader}>
+                      <div className="bm8-date-header" style={styles.dateHeader}>
                         <span>{date}</span>
                         <div style={styles.dateHeaderLine} />
                         <span>{dateMatches.length} {dateMatches.length === 1 ? (lang === "zh" ? "场" : lang === "ms" ? "perlawanan" : "match") : (lang === "zh" ? "场" : lang === "ms" ? "perlawanan" : "matches")}</span>
@@ -2265,7 +2266,7 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
 
         {/* Right: league + button */}
         <div className="bm8-m-right" style={styles.mRight}>
-          <span style={styles.mLeagueTag}>{LEAGUE_LABELS[match.league] || match.league}</span>
+          <span className="bm8-league-tag" style={styles.mLeagueTag}>{LEAGUE_LABELS[match.league] || match.league}</span>
           <button
             onClick={isExpanded ? onToggle : onClick}
             disabled={isPredicting}
@@ -2694,23 +2695,49 @@ const globalCSS = `
   }
 
   @media (max-width: 768px) {
-    .bm8-hero { flex-direction: column !important; padding: 24px 16px !important; gap: 20px !important; align-items: flex-start !important; }
-    .bm8-hero-title { font-size: clamp(28px, 8vw, 40px) !important; margin-bottom: 12px !important; }
-    .bm8-main { padding: 0 16px 32px !important; }
-    .bm8-nav-inner { padding: 0 16px !important; gap: 12px !important; }
-    .bm8-search-row { flex-direction: column !important; gap: 10px !important; }
-    .bm8-search-row > div:first-child { width: 100%; min-width: auto !important; }
-    .bm8-refresh-btn { width: 100%; justify-content: center !important; }
-    .match-row { padding: 12px 14px !important; gap: 10px !important; }
-    .bm8-m-teams { gap: 8px !important; }
-    .bm8-team-name { font-size: 13px !important; }
+    /* Nav */
+    .bm8-nav-inner { padding: 0 14px !important; gap: 10px !important; }
+
+    /* Hero */
+    .bm8-hero { flex-direction: column !important; padding: 20px 16px 16px !important; gap: 16px !important; align-items: center !important; }
+    .bm8-hero-title { font-size: clamp(26px, 7.5vw, 38px) !important; margin-bottom: 10px !important; }
+
+    /* Main content */
+    .bm8-main { padding: 0 12px 28px !important; }
+
+    /* Search row */
+    .bm8-search-row { flex-direction: row !important; gap: 8px !important; margin-bottom: 12px !important; }
+    .bm8-search-row > div:first-child { flex: 1; min-width: 0 !important; }
+    .bm8-refresh-btn { padding: 10px 14px !important; flex-shrink: 0; }
+    .bm8-refresh-btn span { display: none !important; }
+
+    /* Filter tabs (Upcoming / Today / Completed) */
+    .bm8-filter-tabs { margin-bottom: 12px !important; }
+    .bm8-filter-tab { font-size: 11px !important; padding: 9px 4px !important; }
+
+    /* Hide date dropdowns — league is already in tab bar */
+    .bm8-filter-row { display: none !important; }
+
+    /* Status bar */
+    .bm8-status-bar { font-size: 10px !important; margin-bottom: 10px !important; padding-bottom: 10px !important; }
+
+    /* Date headers */
+    .bm8-date-header { font-size: 10px !important; padding: 12px 0 6px !important; }
+
+    /* Match rows */
+    .match-row { padding: 10px 12px !important; gap: 8px !important; margin-bottom: 6px !important; }
+    .bm8-m-teams { gap: 6px !important; }
+    .bm8-team-name { font-size: 13px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 82px !important; }
+    .bm8-league-tag { display: none !important; }
     .bm8-m-right { gap: 6px !important; }
-    .bm8-predict-btn { padding: 7px 12px !important; font-size: 11px !important; }
-    .bm8-modal-overlay { padding: 20px 12px !important; }
-    .bm8-modal-body { padding: 18px !important; }
-    .bm8-scoreboard { padding: 24px 12px !important; gap: 8px !important; }
-    .bm8-score-num { font-size: clamp(40px, 14vw, 64px) !important; }
-    .bm8-footer { padding: 20px 16px !important; gap: 8px !important; flex-wrap: wrap !important; }
+    .bm8-predict-btn { padding: 7px 11px !important; font-size: 11px !important; }
+
+    /* Modal */
+    .bm8-modal-overlay { padding: 16px 10px !important; }
+    .bm8-modal-body { padding: 16px !important; }
+    .bm8-scoreboard { padding: 20px 10px !important; gap: 8px !important; }
+    .bm8-score-num { font-size: clamp(38px, 13vw, 60px) !important; }
+    .bm8-footer { padding: 16px 12px !important; gap: 8px !important; flex-wrap: wrap !important; }
     .parlay-strategy-grid { grid-template-columns: 1fr !important; }
     .parlay-picks-grid { grid-template-columns: 1fr !important; }
   }
