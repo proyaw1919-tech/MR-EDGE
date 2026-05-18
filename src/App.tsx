@@ -2875,9 +2875,9 @@ const styles = {
   tagline: { fontFamily: "'Playfair Display', serif", fontSize: 25, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
   navSubtitle: { fontSize: 8, fontWeight: 500, color: "#fff", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
 
-  navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
-  navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
-  navLinkActive: { color: "#F0B429", background: "rgba(240,180,41,0.12)", fontWeight: 500 },
+  navLinks: { display: "flex", gap: 4, flex: 1, justifyContent: "center" },
+  navLink: { background: "transparent", border: "none", color: "#888", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "7px 16px", borderRadius: 8, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const, fontWeight: 500 },
+  navLinkActive: { color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)", fontWeight: 700, boxShadow: "0 2px 10px rgba(249,115,22,0.4)" },
   navLinkUnderline: { display: "none" },
 
   menuBtn: { display: "none", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto" },
