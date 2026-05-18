@@ -1070,7 +1070,7 @@ Rules:
         <div className="bm8-nav-inner" style={styles.navInner}>
           {/* Logo */}
           <div style={styles.brandBlock}>
-            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 46, width: "auto", display: "block", flexShrink: 0 }} />
+            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 58, width: "auto", display: "block", flexShrink: 0 }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {lang === "zh"
                 ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
