@@ -2226,30 +2226,38 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
 
         {/* Teams centered */}
         <div className="bm8-m-teams" style={styles.mTeams}>
-          <span className="bm8-team-name" style={{
-            ...styles.mTeamName,
-            color: isRecent && match.homeScore > match.awayScore ? "#fff" : "#ccc",
-            fontWeight: isRecent && match.homeScore > match.awayScore ? 700 : 600,
-          }}>{match.home}</span>
+          {/* Home team */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+            <span className="bm8-team-name" style={{
+              ...styles.mTeamName,
+              color: isRecent && match.homeScore > match.awayScore ? "#fff" : "#ccc",
+              fontWeight: isRecent && match.homeScore > match.awayScore ? 700 : 600,
+            }}>{match.home}</span>
+            <TeamBadge name={match.home} crest={match.homeCrest} size={26} />
+          </div>
 
           {liveData ? (
-            <div style={{ textAlign: "center" as const }}>
+            <div style={{ textAlign: "center" as const, flexShrink: 0 }}>
               <div className="pulsing" style={{ color: "#FF3333", fontSize: 9, fontWeight: 800, letterSpacing: 1, marginBottom: 2 }}>
                 ● LIVE{liveData.minute ? ` ${liveData.minute}'` : liveData.liveStatus === "HALF_TIME" ? " HT" : ""}
               </div>
               <div style={styles.scoreBadge}>{liveData.homeScore} – {liveData.awayScore}</div>
             </div>
           ) : isRecent ? (
-            <div style={styles.scoreBadge}>{match.homeScore} – {match.awayScore}</div>
+            <div style={{ ...styles.scoreBadge, flexShrink: 0 }}>{match.homeScore} – {match.awayScore}</div>
           ) : (
-            <div style={styles.vsChip}>{t.vs}</div>
+            <div style={{ ...styles.vsChip, flexShrink: 0 }}>{t.vs}</div>
           )}
 
-          <span className="bm8-team-name" style={{
-            ...styles.mTeamName,
-            color: isRecent && match.awayScore > match.homeScore ? "#fff" : "#ccc",
-            fontWeight: isRecent && match.awayScore > match.homeScore ? 700 : 600,
-          }}>{match.away}</span>
+          {/* Away team */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-start" }}>
+            <TeamBadge name={match.away} crest={match.awayCrest} size={26} />
+            <span className="bm8-team-name" style={{
+              ...styles.mTeamName,
+              color: isRecent && match.awayScore > match.homeScore ? "#fff" : "#ccc",
+              fontWeight: isRecent && match.awayScore > match.homeScore ? 700 : 600,
+            }}>{match.away}</span>
+          </div>
         </div>
 
         {/* Right: league + button */}
