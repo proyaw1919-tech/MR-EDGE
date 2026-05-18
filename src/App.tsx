@@ -2877,7 +2877,7 @@ const styles = {
 
   navLinks: { display: "flex", gap: 4, flex: 1, justifyContent: "center" },
   navLink: { background: "transparent", border: "none", color: "#888", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "7px 16px", borderRadius: 8, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const, fontWeight: 500 },
-  navLinkActive: { color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)", fontWeight: 700, boxShadow: "0 2px 10px rgba(249,115,22,0.4)" },
+  navLinkActive: { color: "#000", background: "linear-gradient(135deg, #C9A84C, #F0B429)", fontWeight: 700, boxShadow: "0 2px 10px rgba(240,180,41,0.4)" },
   navLinkUnderline: { display: "none" },
 
   menuBtn: { display: "none", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto" },
@@ -2938,7 +2938,7 @@ const styles = {
 
   mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   mLeagueTag: { fontSize: 11, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#fff" },
-  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 20px", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em", boxShadow: "0 2px 12px rgba(249,115,22,0.35)" },
+  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 20px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em", boxShadow: "0 2px 12px rgba(240,180,41,0.35)" },
 
   empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
 
