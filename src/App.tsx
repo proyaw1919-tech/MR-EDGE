@@ -1079,7 +1079,7 @@ Rules:
         {/* dark overlay so text stays readable over any photo */}
         <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,15,0.62)", zIndex: 0 }} />
         <div style={{ ...styles.heroContent, position: "relative", zIndex: 1 }}>
-          <div style={styles.heroLabel}>
+          <div className="bm8-hero-label" style={styles.heroLabel}>
             <span style={styles.heroDot} />
             {activeNav === "live" ? t.liveHeroLabel :
              activeNav === "results" ? t.resultsHeroLabel :
@@ -1106,7 +1106,7 @@ Rules:
               </>
             )}
           </h1>
-          <p style={styles.heroSub}>
+          <p className="bm8-hero-sub" style={styles.heroSub}>
             {activeNav === "live" ? t.liveHeroSub :
              activeNav === "results" ? t.resultsHeroSub :
              activeNav === "insights" ? t.insightsHeroSub :
@@ -2226,12 +2226,12 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
         ...(isExpanded ? { borderColor: "rgba(240,180,41,0.3)", borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : {}),
       }}>
         {/* Time */}
-        <div style={styles.mTime}>{isRecent ? t.ft : (match.time || "—")}</div>
+        <div className="bm8-m-time" style={styles.mTime}>{isRecent ? t.ft : (match.time || "—")}</div>
 
         {/* Teams centered */}
         <div className="bm8-m-teams" style={styles.mTeams}>
           {/* Home team */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+          <div className="bm8-m-home" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
             <span className="bm8-team-name" style={{
               ...styles.mTeamName,
               color: isRecent && match.homeScore > match.awayScore ? "#fff" : "#ccc",
@@ -2254,7 +2254,7 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
           )}
 
           {/* Away team */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-start" }}>
+          <div className="bm8-m-away" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-start" }}>
             <TeamBadge name={match.away} crest={match.awayCrest} size={26} />
             <span className="bm8-team-name" style={{
               ...styles.mTeamName,
@@ -2698,9 +2698,11 @@ const globalCSS = `
     /* Nav */
     .bm8-nav-inner { padding: 0 14px !important; gap: 10px !important; }
 
-    /* Hero */
-    .bm8-hero { flex-direction: column !important; padding: 20px 16px 16px !important; gap: 16px !important; align-items: center !important; }
-    .bm8-hero-title { font-size: clamp(26px, 7.5vw, 38px) !important; margin-bottom: 10px !important; }
+    /* Hero — compact strip on mobile */
+    .bm8-hero { padding: 18px 16px 14px !important; min-height: unset !important; }
+    .bm8-hero-title { font-size: clamp(22px, 6vw, 30px) !important; margin-bottom: 8px !important; }
+    .bm8-hero-sub { font-size: 12px !important; max-width: 100% !important; }
+    .bm8-hero-label { font-size: 10px !important; margin-bottom: 10px !important; }
 
     /* Main content */
     .bm8-main { padding: 0 12px 28px !important; }
@@ -2724,13 +2726,42 @@ const globalCSS = `
     /* Date headers */
     .bm8-date-header { font-size: 10px !important; padding: 12px 0 6px !important; }
 
-    /* Match rows */
-    .match-row { padding: 10px 12px !important; gap: 8px !important; margin-bottom: 6px !important; }
-    .bm8-m-teams { gap: 6px !important; }
-    .bm8-team-name { font-size: 13px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 82px !important; }
+    /* Match rows — symmetrical grid layout */
+    .match-row { padding: 10px 10px !important; gap: 6px !important; margin-bottom: 6px !important; }
+    .bm8-m-teams {
+      display: grid !important;
+      grid-template-columns: 1fr 38px 1fr !important;
+      gap: 2px !important;
+      align-items: center !important;
+    }
+    .bm8-m-home {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 5px !important;
+      overflow: hidden !important;
+      min-width: 0 !important;
+    }
+    .bm8-m-away {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 5px !important;
+      overflow: hidden !important;
+      min-width: 0 !important;
+    }
+    .bm8-team-name {
+      font-size: 12px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      min-width: 0 !important;
+      flex-shrink: 1 !important;
+    }
     .bm8-league-tag { display: none !important; }
-    .bm8-m-right { gap: 6px !important; }
+    .bm8-m-right { gap: 0 !important; }
     .bm8-predict-btn { padding: 7px 11px !important; font-size: 11px !important; }
+    .bm8-m-time { font-size: 11px !important; min-width: 36px !important; }
 
     /* Modal */
     .bm8-modal-overlay { padding: 16px 10px !important; }
