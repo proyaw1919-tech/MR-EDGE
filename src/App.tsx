@@ -2739,11 +2739,11 @@ const styles = {
 
   hero: { maxWidth: 1400, margin: "0 auto", padding: "40px 24px 32px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" as const, position: "relative", overflow: "hidden" },
   heroContent: { flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center" },
-  heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 10, letterSpacing: "0.35em", color: "#F0B429", fontFamily: "inherit", marginBottom: 18, fontWeight: 500, textTransform: "uppercase" as const, opacity: 0.8 },
+  heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 12, letterSpacing: "0.35em", color: "#F0B429", fontFamily: "inherit", marginBottom: 18, fontWeight: 500, textTransform: "uppercase" as const, opacity: 0.8 },
   heroDot: { width: 7, height: 7, borderRadius: "50%", background: "#F0B429", boxShadow: "0 0 8px rgba(240,180,41,0.6)" },
-  heroTitle: { fontFamily: "inherit", fontSize: "clamp(28px, 4vw, 46px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 14, color: "#fff" },
+  heroTitle: { fontFamily: "inherit", fontSize: "clamp(32px, 4.6vw, 53px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 14, color: "#fff" },
   heroEm: { fontStyle: "italic", background: "linear-gradient(90deg, #F0B429, #ff9500)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" },
-  heroSub: { fontSize: 13, lineHeight: 1.65, color: "#aaa", maxWidth: 440 },
+  heroSub: { fontSize: 15, lineHeight: 1.65, color: "#aaa", maxWidth: 440 },
   heroStats: { display: "flex", gap: 16, flexShrink: 0 },
   heroStat: { textAlign: "center" as const, padding: "16px 24px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 },
   heroStatVal: { fontSize: 26, fontWeight: 800, color: "#F0B429" },
@@ -2773,19 +2773,19 @@ const styles = {
   statusBar: { fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#aaa" },
 
   matchList: { display: "flex", flexDirection: "column", gap: 0 },
-  dateHeader: { display: "flex", alignItems: "center", gap: 14, padding: "18px 0 8px", fontSize: 11, color: "#fff", letterSpacing: "0.15em", textTransform: "uppercase" as const },
+  dateHeader: { display: "flex", alignItems: "center", gap: 14, padding: "18px 0 8px", fontSize: 12, color: "#fff", letterSpacing: "0.15em", textTransform: "uppercase" as const },
   dateHeaderLine: { flex: 1, height: 1, background: "rgba(255,255,255,0.04)" },
   matchRow: { display: "flex", alignItems: "center", padding: "14px 18px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, transition: "all 0.15s", animation: "fadeUp 0.4s ease-out both", gap: 16, marginBottom: 8 },
 
-  mTime: { fontSize: 12, color: "#fff", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
+  mTime: { fontSize: 13, color: "#fff", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
   mTeams: { display: "flex", alignItems: "center", gap: 14, flex: 1, justifyContent: "center" },
-  mTeamName: { fontFamily: "inherit", fontSize: 14, color: "#fff", fontWeight: 600 },
-  vsChip: { fontSize: 10, color: "#F0B429", background: "#16161E", padding: "3px 8px", borderRadius: 4, fontWeight: 700 },
+  mTeamName: { fontFamily: "inherit", fontSize: 16, color: "#fff", fontWeight: 600 },
+  vsChip: { fontSize: 11, color: "#F0B429", background: "#16161E", padding: "3px 8px", borderRadius: 4, fontWeight: 700 },
   scoreBadge: { fontFamily: "inherit", fontSize: 16, color: "#fff", fontWeight: 700, padding: "4px 14px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 6 },
 
   mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
-  mLeagueTag: { fontSize: 10, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#fff" },
-  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 6, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em" },
+  mLeagueTag: { fontSize: 11, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#fff" },
+  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em" },
 
   empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
 
