@@ -1083,14 +1083,19 @@ Rules:
 
           {/* Desktop nav */}
           <nav className="desktop-nav" style={styles.navLinks}>
-            {Object.entries(t.nav).map(([key, label]) => (
+            {([
+              { key: "fixtures",  icon: <Calendar size={14} />,     label: t.nav.fixtures },
+              { key: "results",   icon: <CheckCircle size={14} />,  label: t.nav.results },
+              { key: "insights",  icon: <BarChart2 size={14} />,    label: t.nav.insights },
+              { key: "standings", icon: <List size={14} />,         label: t.nav.standings },
+              { key: "parlay",    icon: <Layers size={14} />,       label: t.nav.parlay },
+            ] as { key: string; icon: React.ReactNode; label: string }[]).map(({ key, icon, label }) => (
               <button
                 key={key}
                 onClick={() => { setActiveNav(key); setExpandedIds(new Set()); setSearch(""); }}
-                style={{ ...styles.navLink, ...(activeNav === key ? styles.navLinkActive : {}) }}
+                style={{ ...styles.navLink, ...(activeNav === key ? styles.navLinkActive : {}), display: "flex", alignItems: "center", gap: 6 }}
               >
-                {label}
-                {activeNav === key && <span style={styles.navLinkUnderline} />}
+                {icon}{label}
               </button>
             ))}
           </nav>
