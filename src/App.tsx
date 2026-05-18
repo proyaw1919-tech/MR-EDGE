@@ -712,6 +712,24 @@ export default function BM8Predictor() {
     } catch { return null; }
   };
 
+  // ====================== TEAM STATS CACHE (Sofascore) ======================
+  const statsCacheRef = React.useRef<Map<string, { stats: any; fetchedAt: number }>>(new Map());
+
+  const fetchTeamStats = async (home: string, away: string): Promise<{ home: any; away: any }> => {
+    const key = `${home}__${away}`;
+    const cache = statsCacheRef.current;
+    const hit = cache.get(key);
+    if (hit && Date.now() - hit.fetchedAt < 60 * 60 * 1000) return hit.stats;
+    try {
+      const r = await fetch(`/api/teamstats?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`);
+      if (!r.ok) return { home: null, away: null };
+      const data = await r.json();
+      const stats = { home: data.home || null, away: data.away || null };
+      cache.set(key, { stats, fetchedAt: Date.now() });
+      return stats;
+    } catch { return { home: null, away: null }; }
+  };
+
   // ====================== ODDS CACHE ======================
   const oddsCacheRef = React.useRef<Map<string, { odds: any[]; fetchedAt: number }>>(new Map());
 
@@ -751,17 +769,19 @@ export default function BM8Predictor() {
     try {
       const langName = lang === "zh" ? "CHINESE (Simplified)" : lang === "ms" ? "BAHASA MELAYU" : "ENGLISH";
 
-      // 3. Fetch real standings + top scorers + odds in parallel (upcoming matches only)
+      // 3. Fetch real standings + top scorers + odds + team stats in parallel (upcoming matches only)
       let standingsBlock = "";
       let scorersBlock = "";
       let oddsBlock = "";
+      let teamStatsBlock = "";
       let homeFormArr: string[] = [];
       let awayFormArr: string[] = [];
       if (!isRecent) {
-        const [standings, allScorers, leagueOdds] = await Promise.all([
+        const [standings, allScorers, leagueOdds, teamStats] = await Promise.all([
           fetchStandingsForMatch(match.league),
           fetchTopScorers(match.league),
           fetchOddsForLeague(match.league),
+          fetchTeamStats(match.home, match.away),
         ]);
 
         if (standings?.length) {
@@ -819,6 +839,27 @@ Use these exact values in the matchOdds JSON field.
 `;
           }
         }
+
+        // Build advanced team statistics block (Sofascore xG-level data)
+        const fmtStats = (s: any, name: string) => {
+          if (!s) return `${name}: stats unavailable`;
+          const parts = [`${s.games} games`];
+          if (s.possession != null) parts.push(`possession ${s.possession}%`);
+          if (s.onTargetPG != null) parts.push(`shots-on-target/game ${s.onTargetPG}`);
+          if (s.bigChancesPG != null) parts.push(`big chances created/game ${s.bigChancesPG}`);
+          if (s.goalsPG != null) parts.push(`goals/game ${s.goalsPG}`);
+          if (s.concededPG != null) parts.push(`conceded/game ${s.concededPG}`);
+          if (s.cleanSheets != null) parts.push(`clean sheets ${s.cleanSheets}`);
+          if (s.avgRating != null) parts.push(`avg Sofascore rating ${s.avgRating}`);
+          return `${name}: ${parts.join(" | ")}`;
+        };
+        if (teamStats.home || teamStats.away) {
+          teamStatsBlock = `
+ADVANCED TEAM STATISTICS THIS SEASON (Sofascore real data — use for xG-style analysis):
+${fmtStats(teamStats.home, match.home + " (Home)")}
+${fmtStats(teamStats.away, match.away + " (Away)")}
+`;
+        }
       }
 
       const homeFormHint = homeFormArr.length
@@ -861,8 +902,8 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}
-Consider: home advantage, league position gap, goal difference, recent form, head-to-head patterns, bookmaker odds (market consensus is highly predictive), and which teams have the most dangerous goalscorers.
+${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}
+Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, and which teams have the most dangerous goalscorers.
 
 Respond ONLY with valid JSON in this EXACT structure:
 {
