@@ -712,6 +712,25 @@ export default function BM8Predictor() {
     } catch { return null; }
   };
 
+  // ====================== ODDS CACHE ======================
+  const oddsCacheRef = React.useRef<Map<string, { odds: any[]; fetchedAt: number }>>(new Map());
+
+  const fetchOddsForLeague = async (league: string): Promise<any[]> => {
+    const unsupported = ["WorldCup"];
+    if (unsupported.includes(league)) return [];
+    const cache = oddsCacheRef.current;
+    const hit = cache.get(league);
+    if (hit && Date.now() - hit.fetchedAt < 60 * 60 * 1000) return hit.odds;
+    try {
+      const r = await fetch(`/api/odds?league=${encodeURIComponent(league)}`);
+      if (!r.ok) return [];
+      const data = await r.json();
+      const odds = data.odds || [];
+      cache.set(league, { odds, fetchedAt: Date.now() });
+      return odds;
+    } catch { return []; }
+  };
+
   const predictMatch = async (match) => {
     // 1. Check cache first
     const cached = readCache(match, lang);
@@ -732,15 +751,17 @@ export default function BM8Predictor() {
     try {
       const langName = lang === "zh" ? "CHINESE (Simplified)" : lang === "ms" ? "BAHASA MELAYU" : "ENGLISH";
 
-      // 3. Fetch real standings + top scorers in parallel (upcoming matches only)
+      // 3. Fetch real standings + top scorers + odds in parallel (upcoming matches only)
       let standingsBlock = "";
       let scorersBlock = "";
+      let oddsBlock = "";
       let homeFormArr: string[] = [];
       let awayFormArr: string[] = [];
       if (!isRecent) {
-        const [standings, allScorers] = await Promise.all([
+        const [standings, allScorers, leagueOdds] = await Promise.all([
           fetchStandingsForMatch(match.league),
           fetchTopScorers(match.league),
+          fetchOddsForLeague(match.league),
         ]);
 
         if (standings?.length) {
@@ -773,6 +794,28 @@ ${buildTeamStatsLine(awayRow, match.away, false)}
             scorersBlock = `
 TOP SCORERS THIS SEASON (real data — factor these players into your playerWatch and reasoning):
 ${lines.join("\n")}
+`;
+          }
+        }
+
+        // Build bookmaker odds block
+        if (leagueOdds.length) {
+          const normStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const mHome = normStr(match.home);
+          const mAway = normStr(match.away);
+          const found = leagueOdds.find((o: any) => {
+            const oHome = normStr(o.home);
+            const oAway = normStr(o.away);
+            return (oHome.includes(mHome) || mHome.includes(oHome)) &&
+                   (oAway.includes(mAway) || mAway.includes(oAway));
+          });
+          if (found?.homeOdds) {
+            const toImpl = (x: number) => Math.round(100 / x);
+            oddsBlock = `
+REAL BOOKMAKER ODDS (averaged across major EU bookmakers — market consensus is highly predictive):
+1X2 Decimal: Home ${found.homeOdds} | Draw ${found.drawOdds} | Away ${found.awayOdds}
+Implied win probability: Home ${toImpl(found.homeOdds)}% | Draw ${toImpl(found.drawOdds)}% | Away ${toImpl(found.awayOdds)}%
+Use these exact values in the matchOdds JSON field.
 `;
           }
         }
@@ -818,8 +861,8 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}
-Consider: home advantage, league position gap, goal difference, recent form, head-to-head patterns, and which teams have the most dangerous goalscorers.
+${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}
+Consider: home advantage, league position gap, goal difference, recent form, head-to-head patterns, bookmaker odds (market consensus is highly predictive), and which teams have the most dangerous goalscorers.
 
 Respond ONLY with valid JSON in this EXACT structure:
 {
