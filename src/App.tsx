@@ -1104,10 +1104,52 @@ Rules:
              t.heroSub}
           </p>
         </div>
-        <div className="bm8-hero-visual" style={styles.heroVisual}>
-          <img src={FOOTBALL_IMG} alt="Football" style={styles.footballImg} />
-        </div>
+        {activeNav === "fixtures" && (
+          <div style={styles.heroStats}>
+            <div style={styles.heroStat}>
+              <div style={styles.heroStatVal}>40+</div>
+              <div style={styles.heroStatLbl}>Bookmakers</div>
+            </div>
+            <div style={styles.heroStat}>
+              <div style={styles.heroStatVal}>11</div>
+              <div style={styles.heroStatLbl}>Leagues</div>
+            </div>
+          </div>
+        )}
       </section>
+
+      {/* LEAGUE TAB BAR */}
+      {(activeNav === "fixtures" || activeNav === "live" || activeNav === "results") && (
+        <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0A0A0F", position: "sticky", top: 56, zIndex: 40 }}>
+          <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0, overflowX: "auto" }}>
+            {[
+              { key: "all", label: "All" },
+              { key: "EPL", label: "EPL" },
+              { key: "LaLiga", label: "La Liga" },
+              { key: "SerieA", label: "Serie A" },
+              { key: "Bundesliga", label: "Bundesliga" },
+              { key: "Ligue1", label: "Ligue 1" },
+              { key: "UCL", label: "UCL" },
+              { key: "UEL", label: "Europa League" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => { setLeague(tab.key); setExpandedIds(new Set()); }}
+                style={{
+                  fontSize: 12, color: league === tab.key ? "#F0B429" : "#555",
+                  padding: "12px 16px", cursor: "pointer",
+                  borderTop: "none", borderLeft: "none", borderRight: "none",
+                  borderBottom: `2px solid ${league === tab.key ? "#F0B429" : "transparent"}`,
+                  background: "transparent", transition: "all 0.15s",
+                  whiteSpace: "nowrap" as const, fontFamily: "inherit",
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <main className="bm8-main" style={styles.main}>
         {/* ========== FIXTURES TAB ========== */}
@@ -1194,19 +1236,36 @@ Rules:
               {filteredMatches.length === 0 ? (
                 <div style={styles.empty}>{search ? t.noSearchResults(search) : t.noMatches}</div>
               ) : (
-                filteredMatches.map((match) => (
-                  <MatchRow
-                    key={match.id}
-                    match={match}
-                    onClick={() => predictMatch(match)}
-                    isPredicting={predictingId === match.id}
-                    t={t}
-                    expandedData={expandedResults[match.id]}
-                    isExpanded={expandedIds.has(match.id)}
-                    onToggle={() => toggleExpanded(match.id)}
-                    liveScores={liveScores}
-                  />
-                ))
+                (() => {
+                  const grouped: Record<string, typeof filteredMatches> = {};
+                  filteredMatches.forEach((m) => {
+                    const key = m.date || "Unknown";
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(m);
+                  });
+                  return Object.entries(grouped).map(([date, dateMatches]) => (
+                    <div key={date}>
+                      <div style={styles.dateHeader}>
+                        <span>{date}</span>
+                        <div style={styles.dateHeaderLine} />
+                        <span>{dateMatches.length} {dateMatches.length === 1 ? (lang === "zh" ? "场" : lang === "ms" ? "perlawanan" : "match") : (lang === "zh" ? "场" : lang === "ms" ? "perlawanan" : "matches")}</span>
+                      </div>
+                      {dateMatches.map((match) => (
+                        <MatchRow
+                          key={match.id}
+                          match={match}
+                          onClick={() => predictMatch(match)}
+                          isPredicting={predictingId === match.id}
+                          t={t}
+                          expandedData={expandedResults[match.id]}
+                          isExpanded={expandedIds.has(match.id)}
+                          onToggle={() => toggleExpanded(match.id)}
+                          liveScores={liveScores}
+                        />
+                      ))}
+                    </div>
+                  ));
+                })()
               )}
             </div>
           </>
@@ -2313,31 +2372,27 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
   const isRecent = match.status === "recent";
   const liveData = liveScores?.get(`${match.home}|${match.away}`);
   return (
-    <div className="match-row-wrap" style={{ marginBottom: 12 }}>
-      <div className="match-row" style={{ ...styles.matchRow, ...(isPredicting ? { opacity: 0.7 } : {}), marginBottom: 0, ...(isExpanded ? { borderColor: "rgba(240,180,41,0.3)", borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : {}) }}>
-        <div className="bm8-m-date" style={styles.mDate}>
-          <div style={styles.mDateTop}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.6 }}>
-              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-            </svg>
-            <span>{match.date}</span>
-          </div>
-          <div style={styles.mTime}>{isRecent ? t.ft : match.time}</div>
-        </div>
+    <div className="match-row-wrap" style={{ marginBottom: 0 }}>
+      <div className="match-row" style={{
+        ...styles.matchRow,
+        marginBottom: isExpanded ? 0 : 8,
+        ...(isPredicting ? { opacity: 0.7 } : {}),
+        ...(isExpanded ? { borderColor: "rgba(240,180,41,0.3)", borderBottomLeftRadius: 0, borderBottomRightRadius: 0 } : {}),
+      }}>
+        {/* Time */}
+        <div style={styles.mTime}>{isRecent ? t.ft : (match.time || "—")}</div>
 
+        {/* Teams centered */}
         <div className="bm8-m-teams" style={styles.mTeams}>
-          <div style={{ ...styles.mTeamSide, justifyContent: "flex-end" }}>
-            <span className="bm8-team-name" style={{
-              ...styles.mTeamName,
-              fontWeight: isRecent && match.homeScore > match.awayScore ? 600 : 400,
-              color: isRecent && match.homeScore > match.awayScore ? "#fff" : "#e8e8e8",
-            }}>{match.home}</span>
-            <TeamBadge name={match.home} crest={match.homeCrest} size={48} />
-          </div>
+          <span className="bm8-team-name" style={{
+            ...styles.mTeamName,
+            color: isRecent && match.homeScore > match.awayScore ? "#fff" : "#ccc",
+            fontWeight: isRecent && match.homeScore > match.awayScore ? 700 : 600,
+          }}>{match.home}</span>
 
           {liveData ? (
             <div style={{ textAlign: "center" as const }}>
-              <div className="animate-pulse-slow" style={{ color: "#FF3333", fontSize: 10, fontWeight: 800, letterSpacing: 1, marginBottom: 2 }}>
+              <div className="pulsing" style={{ color: "#FF3333", fontSize: 9, fontWeight: 800, letterSpacing: 1, marginBottom: 2 }}>
                 ● LIVE{liveData.minute ? ` ${liveData.minute}'` : liveData.liveStatus === "HALF_TIME" ? " HT" : ""}
               </div>
               <div style={styles.scoreBadge}>{liveData.homeScore} – {liveData.awayScore}</div>
@@ -2345,21 +2400,17 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
           ) : isRecent ? (
             <div style={styles.scoreBadge}>{match.homeScore} – {match.awayScore}</div>
           ) : (
-            <div className="bm8-vs-circle" style={styles.vsCircle}>
-              <span style={styles.vsCircleText}>{t.vs}</span>
-            </div>
+            <div style={styles.vsChip}>{t.vs}</div>
           )}
 
-          <div style={{ ...styles.mTeamSide, justifyContent: "flex-start" }}>
-            <TeamBadge name={match.away} crest={match.awayCrest} size={48} />
-            <span className="bm8-team-name" style={{
-              ...styles.mTeamName,
-              fontWeight: isRecent && match.awayScore > match.homeScore ? 600 : 400,
-              color: isRecent && match.awayScore > match.homeScore ? "#fff" : "#e8e8e8",
-            }}>{match.away}</span>
-          </div>
+          <span className="bm8-team-name" style={{
+            ...styles.mTeamName,
+            color: isRecent && match.awayScore > match.homeScore ? "#fff" : "#ccc",
+            fontWeight: isRecent && match.awayScore > match.homeScore ? 700 : 600,
+          }}>{match.away}</span>
         </div>
 
+        {/* Right: league + button */}
         <div className="bm8-m-right" style={styles.mRight}>
           <span style={styles.mLeagueTag}>{LEAGUE_LABELS[match.league] || match.league}</span>
           <button
@@ -2369,17 +2420,11 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
             style={styles.predictBtn}
           >
             {isPredicting ? (
-              <>
-                <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-                {isRecent ? t.analyzing : t.predicting}
-              </>
+              <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />{isRecent ? t.analyzing : t.predicting}</>
             ) : isExpanded ? (
-              <>{t.hide || "Hide"}<X size={14} /></>
+              <>{t.hide || "Hide"}<X size={13} /></>
             ) : (
-              <>
-                {isRecent ? t.analyze : t.predict}
-                <ArrowRight size={14} />
-              </>
+              <>{isRecent ? t.analyze : t.predict}<ArrowRight size={13} /></>
             )}
           </button>
         </div>
@@ -2796,38 +2841,18 @@ const globalCSS = `
   }
 
   @media (max-width: 768px) {
-    .bm8-hero { grid-template-columns: 1fr !important; padding: 24px 16px !important; min-height: auto !important; gap: 20px !important; }
-    .bm8-hero-visual { min-height: 180px !important; max-height: 220px !important; order: -1; }
-    .bm8-hero-title { font-size: clamp(32px, 8vw, 44px) !important; margin-bottom: 16px !important; }
+    .bm8-hero { flex-direction: column !important; padding: 24px 16px !important; gap: 20px !important; align-items: flex-start !important; }
+    .bm8-hero-title { font-size: clamp(28px, 8vw, 40px) !important; margin-bottom: 12px !important; }
     .bm8-main { padding: 0 16px 32px !important; }
     .bm8-nav-inner { padding: 0 16px !important; gap: 12px !important; }
     .bm8-search-row { flex-direction: column !important; gap: 10px !important; }
     .bm8-search-row > div:first-child { width: 100%; min-width: auto !important; }
     .bm8-refresh-btn { width: 100%; justify-content: center !important; }
-    .match-row {
-      grid-template-columns: 1fr !important;
-      padding: 14px !important;
-      gap: 10px !important;
-    }
-    .bm8-m-date {
-      flex-direction: row !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(240, 180, 41, 0.1);
-    }
-    .bm8-m-teams {
-      grid-template-columns: 1fr auto 1fr !important;
-      gap: 8px !important;
-    }
-    .bm8-team-name { font-size: 14px !important; }
-    .bm8-vs-circle { width: 40px !important; height: 40px !important; }
-    .bm8-m-right {
-      justify-content: space-between !important;
-      padding-top: 10px;
-      border-top: 1px solid rgba(240, 180, 41, 0.1);
-    }
-    .bm8-predict-btn { padding: 8px 16px !important; font-size: 12px !important; }
+    .match-row { padding: 12px 14px !important; gap: 10px !important; }
+    .bm8-m-teams { gap: 8px !important; }
+    .bm8-team-name { font-size: 13px !important; }
+    .bm8-m-right { gap: 6px !important; }
+    .bm8-predict-btn { padding: 7px 12px !important; font-size: 11px !important; }
     .bm8-modal-overlay { padding: 20px 12px !important; }
     .bm8-modal-body { padding: 18px !important; }
     .bm8-scoreboard { padding: 24px 12px !important; gap: 8px !important; }
@@ -2862,15 +2887,17 @@ const styles = {
   langBtn: { padding: "4px 9px", background: "transparent", border: "none", color: "#555", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", fontWeight: 600, cursor: "pointer", borderRadius: 4, transition: "all 0.15s" },
   langBtnActive: { background: "rgba(240,180,41,0.15)", color: "#F0B429" },
 
-  hero: { maxWidth: 1400, margin: "0 auto", padding: "48px 24px", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 40, alignItems: "center", minHeight: 460, position: "relative", overflow: "hidden" },
-  heroContent: {},
+  hero: { maxWidth: 1400, margin: "0 auto", padding: "40px 24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40, position: "relative", overflow: "hidden" },
+  heroContent: { flex: 1 },
   heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 10, letterSpacing: "0.35em", color: "#F0B429", fontFamily: "inherit", marginBottom: 18, fontWeight: 500, textTransform: "uppercase" as const, opacity: 0.8 },
   heroDot: { width: 7, height: 7, borderRadius: "50%", background: "#F0B429", boxShadow: "0 0 8px rgba(240,180,41,0.6)" },
-  heroTitle: { fontFamily: "inherit", fontSize: "clamp(36px, 5vw, 58px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 18, color: "#fff" },
+  heroTitle: { fontFamily: "inherit", fontSize: "clamp(28px, 4vw, 46px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 14, color: "#fff" },
   heroEm: { fontStyle: "italic", background: "linear-gradient(90deg, #F0B429, #ff9500)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" },
-  heroSub: { fontSize: 14, lineHeight: 1.65, color: "#555", maxWidth: 480 },
-  heroVisual: { width: "100%", minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center" },
-  footballImg: { width: "100%", maxWidth: 700, height: "auto", objectFit: "contain", display: "block" },
+  heroSub: { fontSize: 13, lineHeight: 1.65, color: "#555", maxWidth: 440 },
+  heroStats: { display: "flex", gap: 16, flexShrink: 0 },
+  heroStat: { textAlign: "center" as const, padding: "16px 24px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 },
+  heroStatVal: { fontSize: 26, fontWeight: 800, color: "#F0B429" },
+  heroStatLbl: { fontSize: 10, color: "#555", letterSpacing: "0.1em", marginTop: 4 },
 
   main: { maxWidth: 1400, margin: "0 auto", padding: "0 24px 48px" },
 
@@ -2895,30 +2922,20 @@ const styles = {
 
   statusBar: { fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#444" },
 
-  matchList: { display: "flex", flexDirection: "column", gap: 8 },
-  matchRow: { display: "grid", gridTemplateColumns: "120px 1fr 200px", gap: 20, alignItems: "center", padding: "18px 22px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, transition: "all 0.15s", animation: "fadeUp 0.4s ease-out both", overflow: "hidden" },
-  mDate: { display: "flex", flexDirection: "column", gap: 6 },
-  mDateTop: { display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#555" },
-  mTime: { fontSize: 18, fontWeight: 700, color: "#F0B429", fontFamily: "inherit" },
+  matchList: { display: "flex", flexDirection: "column", gap: 0 },
+  dateHeader: { display: "flex", alignItems: "center", gap: 14, padding: "18px 0 8px", fontSize: 11, color: "#2e2e2e", letterSpacing: "0.15em", textTransform: "uppercase" as const },
+  dateHeaderLine: { flex: 1, height: 1, background: "rgba(255,255,255,0.04)" },
+  matchRow: { display: "flex", alignItems: "center", padding: "14px 18px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, transition: "all 0.15s", animation: "fadeUp 0.4s ease-out both", gap: 16, marginBottom: 8 },
 
-  mTeams: { display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 20, alignItems: "center", minWidth: 0 },
-  mTeamSide: { display: "flex", alignItems: "center", gap: 14, minWidth: 0 },
-  mTeamName: { fontFamily: "inherit", fontSize: 20, color: "#ccc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 },
+  mTime: { fontSize: 12, color: "#444", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
+  mTeams: { display: "flex", alignItems: "center", gap: 14, flex: 1, justifyContent: "center" },
+  mTeamName: { fontFamily: "inherit", fontSize: 14, color: "#ccc", fontWeight: 600 },
+  vsChip: { fontSize: 10, color: "#333", background: "#16161E", padding: "3px 8px", borderRadius: 4 },
+  scoreBadge: { fontFamily: "inherit", fontSize: 16, color: "#fff", fontWeight: 700, padding: "4px 14px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 6 },
 
-  vsCircle: {
-    width: 46, height: 46, borderRadius: 8,
-    background: "#16161E",
-    border: "1px solid rgba(255,255,255,0.07)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    flexShrink: 0,
-  },
-  vsCircleText: { fontFamily: "inherit", fontSize: 10, fontWeight: 700, color: "#333", letterSpacing: "0.2em" },
-
-  scoreBadge: { fontFamily: "inherit", fontSize: 24, color: "#fff", fontWeight: 700, padding: "7px 16px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 8, minWidth: 90, textAlign: "center", flexShrink: 0 },
-
-  mRight: { display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" },
+  mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   mLeagueTag: { fontSize: 10, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#444" },
-  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" },
+  predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 6, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em" },
 
   empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
 
