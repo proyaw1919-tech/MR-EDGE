@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
   Sparkles, Loader2, RefreshCw, X, Search, Brain, AlertTriangle,
-  Star, Trophy, Globe, ArrowRight, Menu
+  Star, Trophy, Globe, ArrowRight, Menu, Calendar, CheckCircle,
+  BarChart2, List, Layers
 } from "lucide-react";
 
 // Robust JSON parser
@@ -1132,13 +1133,26 @@ Rules:
         {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
           <div className="mobile-menu" style={styles.mobileMenu}>
-            {Object.entries(t.nav).map(([key, label]) => (
+            {([
+              { key: "fixtures",  icon: <Calendar size={20} />,     label: t.nav.fixtures },
+              { key: "results",   icon: <CheckCircle size={20} />,  label: t.nav.results },
+              { key: "insights",  icon: <BarChart2 size={20} />,    label: t.nav.insights },
+              { key: "standings", icon: <List size={20} />,         label: t.nav.standings },
+              { key: "parlay",    icon: <Layers size={20} />,       label: t.nav.parlay },
+            ] as { key: string; icon: React.ReactNode; label: string }[]).map(({ key, icon, label }) => (
               <button
                 key={key}
                 onClick={() => { setActiveNav(key); setMobileMenuOpen(false); setExpandedIds(new Set()); setSearch(""); }}
-                style={{ ...styles.mobileNavLink, ...(activeNav === key ? styles.mobileNavLinkActive : {}) }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 14,
+                  padding: "14px 18px", borderRadius: 10, border: "none",
+                  cursor: "pointer", fontFamily: "inherit", fontSize: 15, width: "100%", textAlign: "left",
+                  fontWeight: activeNav === key ? 700 : 400,
+                  background: activeNav === key ? "linear-gradient(135deg, #C9A84C, #F0B429)" : "transparent",
+                  color: activeNav === key ? "#000" : "#ccc",
+                }}
               >
-                {label}
+                {icon}{label}
               </button>
             ))}
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 8, paddingTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
@@ -2894,7 +2908,7 @@ const styles = {
 
   menuBtn: { display: "none", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", color: "#000", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto", boxShadow: "0 2px 10px rgba(240,180,41,0.4)" },
 
-  mobileMenu: { position: "absolute", top: "100%", left: 0, right: 0, background: "#0A0A0F", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 24px", display: "flex", flexDirection: "column", gap: 4 },
+  mobileMenu: { position: "absolute", top: "100%", left: 0, right: 0, background: "#0D0D12", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 12px", display: "flex", flexDirection: "column", gap: 4 },
   mobileNavLink: { background: "transparent", border: "none", color: "#8a8a8a", fontSize: 14, fontFamily: "inherit", cursor: "pointer", padding: "12px 8px", textAlign: "left", borderRadius: 6 },
   mobileNavLinkActive: { color: "#F0B429", background: "rgba(240,180,41,0.1)", fontWeight: 500 },
 
