@@ -493,6 +493,7 @@ export default function BM8Predictor() {
   const [lang, setLang] = useState("en");
   const [activeNav, setActiveNav] = useState("fixtures");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const t = T[lang];
 
   const [matches, setMatches] = useState(() => getDefaultMatches());
@@ -1103,17 +1104,28 @@ Rules:
           </button>
 
           {/* Language selector — hidden on mobile */}
-          <div className="lang-selector-desktop" style={styles.langSelector}>
-            <Globe size={14} color="#8a8a8a" />
-            {[{ c: "en", l: "EN" }, { c: "zh", l: "中" }, { c: "ms", l: "MS" }].map((x) => (
-              <button
-                key={x.c}
-                onClick={() => { setLang(x.c); setExpandedResults({}); }}
-                style={{ ...styles.langBtn, ...(lang === x.c ? styles.langBtnActive : {}) }}
-              >
-                {x.l}
-              </button>
-            ))}
+          <div className="lang-selector-desktop" style={{ position: "relative", flexShrink: 0 }} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setLangDropdownOpen(false); }}>
+            <button
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              style={styles.langDropdownBtn}
+            >
+              <Globe size={13} color="#aaa" />
+              <span style={{ color: "#fff", fontWeight: 600, fontSize: 12, letterSpacing: "0.05em" }}>{lang.toUpperCase()}</span>
+              <span style={{ color: "#666", fontSize: 10 }}>▾</span>
+            </button>
+            {langDropdownOpen && (
+              <div style={styles.langDropdownMenu}>
+                {[{ c: "en", l: "English", code: "EN" }, { c: "zh", l: "中文", code: "CN" }, { c: "ms", l: "Melayu", code: "MS" }].map((x) => (
+                  <button
+                    key={x.c}
+                    onClick={() => { setLang(x.c); setExpandedResults({}); setLangDropdownOpen(false); }}
+                    style={{ ...styles.langDropdownItem, ...(lang === x.c ? styles.langDropdownItemActive : {}) }}
+                  >
+                    {x.l} <span style={{ color: "#666", fontSize: 10 }}>({x.code})</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -2889,6 +2901,10 @@ const styles = {
   langSelector: { display: "flex", alignItems: "center", gap: 4, padding: "4px 6px 4px 10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, flexShrink: 0 },
   langBtn: { padding: "4px 9px", background: "transparent", border: "none", color: "#555", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", fontWeight: 600, cursor: "pointer", borderRadius: 4, transition: "all 0.15s" },
   langBtnActive: { background: "rgba(240,180,41,0.15)", color: "#F0B429" },
+  langDropdownBtn: { display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 7, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" },
+  langDropdownMenu: { position: "absolute" as const, top: "calc(100% + 6px)", right: 0, background: "#1a1a22", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, overflow: "hidden", zIndex: 999, minWidth: 150, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" },
+  langDropdownItem: { display: "block", width: "100%", padding: "10px 16px", background: "transparent", border: "none", color: "#ccc", fontSize: 13, fontFamily: "inherit", cursor: "pointer", textAlign: "left" as const, transition: "background 0.1s" },
+  langDropdownItemActive: { color: "#F0B429", background: "rgba(240,180,41,0.08)" },
 
   hero: { maxWidth: 1400, margin: "0 auto", padding: "40px 24px 32px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" as const, position: "relative", overflow: "hidden" },
   heroContent: { flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center" },
