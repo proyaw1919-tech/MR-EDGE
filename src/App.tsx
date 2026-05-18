@@ -731,6 +731,14 @@ export default function BM8Predictor() {
   };
 
 
+  const fetchApiFootball = async (match: any) => {
+    try {
+      const r = await fetch(`/api/apifootball?home=${encodeURIComponent(match.home)}&away=${encodeURIComponent(match.away)}&date=${encodeURIComponent(match.rawDate || match.date || '')}&league=${encodeURIComponent(match.league)}`);
+      if (!r.ok) return { injuries: null, prediction: null };
+      return r.json();
+    } catch { return { injuries: null, prediction: null }; }
+  };
+
   const fetchWeather = async (match: any) => {
     try {
       const r = await fetch(`/api/weather?home=${encodeURIComponent(match.home)}&date=${encodeURIComponent(match.rawDate || match.date || '')}`);
@@ -783,17 +791,19 @@ export default function BM8Predictor() {
       let scorersBlock = "";
       let oddsBlock = "";
       let teamStatsBlock = "";
+      let injuriesBlock = "";
       let weatherBlock = "";
       let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
       let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
       let awayFormArr: string[] = [];
       if (!isRecent) {
-        const [standings, allScorers, leagueOdds, teamStats, weatherData] = await Promise.all([
+        const [standings, allScorers, leagueOdds, teamStats, apiFootball, weatherData] = await Promise.all([
           fetchStandingsForMatch(match.league),
           fetchTopScorers(match.league),
           fetchOddsForLeague(match.league),
           fetchTeamStats(match.home, match.away),
+          fetchApiFootball(match),
           fetchWeather(match),
         ]);
 
@@ -877,6 +887,28 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
         }
 
 
+        // Build injuries block from API-Football (via RapidAPI)
+        if (apiFootball?.injuries || apiFootball?.prediction) {
+          const inj = apiFootball.injuries;
+          const pred = apiFootball.prediction;
+          const lines: string[] = [];
+          if (inj?.home?.length) lines.push(`${match.home} missing: ${inj.home.slice(0,5).join(", ")}`);
+          else if (inj) lines.push(`${match.home}: no injury concerns reported`);
+          if (inj?.away?.length) lines.push(`${match.away} missing: ${inj.away.slice(0,5).join(", ")}`);
+          else if (inj) lines.push(`${match.away}: no injury concerns reported`);
+          if (pred) {
+            if (pred.advice) lines.push(`API-Football prediction: ${pred.advice}`);
+            if (pred.percent) lines.push(`Market-implied: Home ${pred.percent.home} | Draw ${pred.percent.draw} | Away ${pred.percent.away}`);
+            if (pred.homeForm) lines.push(`${match.home} last-5 form: ${pred.homeForm} (att: ${pred.homeAtt || '?'}, def: ${pred.homeDef || '?'})`);
+            if (pred.awayForm) lines.push(`${match.away} last-5 form: ${pred.awayForm} (att: ${pred.awayAtt || '?'}, def: ${pred.awayDef || '?'})`);
+            if (pred.homeGoalsFor) lines.push(`${match.home} avg goals: ${pred.homeGoalsFor} scored / ${pred.homeGoalsAgainst} conceded per game`);
+            if (pred.awayGoalsFor) lines.push(`${match.away} avg goals: ${pred.awayGoalsFor} scored / ${pred.awayGoalsAgainst} conceded per game`);
+          }
+          if (lines.length) {
+            injuriesBlock = `\nINJURIES & TEAM FORM (API-Football real data):\n${lines.join("\n")}\n`;
+          }
+        }
+
         // Build weather block
         const w = weatherData?.weather;
         if (w) {
@@ -926,7 +958,7 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${weatherBlock}
+${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${weatherBlock}
 Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:

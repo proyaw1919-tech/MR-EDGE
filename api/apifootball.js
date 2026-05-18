@@ -1,14 +1,14 @@
-// api/apifootball.js — Injuries, form, predictions from api-sports.io
-// Env var required: API_FOOTBALL_KEY
+// api/apifootball.js — Injuries, form, predictions via RapidAPI (api-football-v1)
+// Env var required: RAPID_API_KEY
 
 const LEAGUE_IDS = { EPL:39, Championship:40, LaLiga:140, SerieA:135, Bundesliga:78, Ligue1:61, UCL:2, UEL:3, Eredivisie:88, PrimeiraLiga:94, Brasileirao:71 };
 const getSeason = () => { const n=new Date(); return n.getMonth()>=7?n.getFullYear():n.getFullYear()-1; };
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g,'');
-async function apiFetch(path,key){try{const r=await fetch(`https://v3.football.api-sports.io${path}`,{headers:{'x-apisports-key':key}});if(!r.ok)return null;return r.json();}catch{return null;}}
+async function apiFetch(path,key){try{const r=await fetch(`https://api-football-v1.p.rapidapi.com/v3${path}`,{headers:{'x-rapidapi-key':key,'x-rapidapi-host':'api-football-v1.p.rapidapi.com'}});if(!r.ok)return null;return r.json();}catch{return null;}}
 export default async function handler(req,res){
   res.setHeader('Access-Control-Allow-Origin','*');
   if(req.method==='OPTIONS')return res.status(204).end();
-  const key=process.env.API_FOOTBALL_KEY;
+  const key=process.env.RAPID_API_KEY;
   if(!key)return res.status(200).json({injuries:null,prediction:null,debug:'no_key'});
   const{home,away,date,league}=req.query;
   if(!home||!away||!date||!league)return res.status(200).json({injuries:null,prediction:null,debug:'missing_params'});
