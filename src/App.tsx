@@ -2770,21 +2770,21 @@ const styles = {
   filterLabel: { fontSize: 11, fontWeight: 600, color: "#555", letterSpacing: "0.05em" },
   filterSelect: { padding: "10px 14px", background: "#111117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, color: "#e2e2e2", fontSize: 13, fontFamily: "inherit", cursor: "pointer", appearance: "auto" as const },
 
-  statusBar: { fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#444" },
+  statusBar: { fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#aaa" },
 
   matchList: { display: "flex", flexDirection: "column", gap: 0 },
-  dateHeader: { display: "flex", alignItems: "center", gap: 14, padding: "18px 0 8px", fontSize: 11, color: "#2e2e2e", letterSpacing: "0.15em", textTransform: "uppercase" as const },
+  dateHeader: { display: "flex", alignItems: "center", gap: 14, padding: "18px 0 8px", fontSize: 11, color: "#fff", letterSpacing: "0.15em", textTransform: "uppercase" as const },
   dateHeaderLine: { flex: 1, height: 1, background: "rgba(255,255,255,0.04)" },
   matchRow: { display: "flex", alignItems: "center", padding: "14px 18px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, transition: "all 0.15s", animation: "fadeUp 0.4s ease-out both", gap: 16, marginBottom: 8 },
 
-  mTime: { fontSize: 12, color: "#444", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
+  mTime: { fontSize: 12, color: "#fff", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
   mTeams: { display: "flex", alignItems: "center", gap: 14, flex: 1, justifyContent: "center" },
   mTeamName: { fontFamily: "inherit", fontSize: 14, color: "#fff", fontWeight: 600 },
   vsChip: { fontSize: 10, color: "#F0B429", background: "#16161E", padding: "3px 8px", borderRadius: 4, fontWeight: 700 },
   scoreBadge: { fontFamily: "inherit", fontSize: 16, color: "#fff", fontWeight: 700, padding: "4px 14px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 6 },
 
   mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
-  mLeagueTag: { fontSize: 10, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#444" },
+  mLeagueTag: { fontSize: 10, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, fontFamily: "inherit", letterSpacing: "0.1em", fontWeight: 500, color: "#fff" },
   predictBtn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", color: "#000", border: "none", borderRadius: 6, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.08em" },
 
   empty: { textAlign: "center", padding: 60, color: "#444", fontSize: 14 },
