@@ -1104,18 +1104,6 @@ Rules:
              t.heroSub}
           </p>
         </div>
-        {activeNav === "fixtures" && (
-          <div style={styles.heroStats}>
-            <div style={styles.heroStat}>
-              <div style={styles.heroStatVal}>40+</div>
-              <div style={styles.heroStatLbl}>Bookmakers</div>
-            </div>
-            <div style={styles.heroStat}>
-              <div style={styles.heroStatVal}>11</div>
-              <div style={styles.heroStatLbl}>Leagues</div>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* LEAGUE TAB BAR */}
@@ -2733,8 +2721,8 @@ const styles = {
   langBtn: { padding: "4px 9px", background: "transparent", border: "none", color: "#555", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.05em", fontWeight: 600, cursor: "pointer", borderRadius: 4, transition: "all 0.15s" },
   langBtnActive: { background: "rgba(240,180,41,0.15)", color: "#F0B429" },
 
-  hero: { maxWidth: 1400, margin: "0 auto", padding: "40px 24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40, position: "relative", overflow: "hidden" },
-  heroContent: { flex: 1 },
+  hero: { maxWidth: 1400, margin: "0 auto", padding: "40px 24px 32px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" as const, position: "relative", overflow: "hidden" },
+  heroContent: { flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center" },
   heroLabel: { display: "inline-flex", alignItems: "center", gap: 10, fontSize: 10, letterSpacing: "0.35em", color: "#F0B429", fontFamily: "inherit", marginBottom: 18, fontWeight: 500, textTransform: "uppercase" as const, opacity: 0.8 },
   heroDot: { width: 7, height: 7, borderRadius: "50%", background: "#F0B429", boxShadow: "0 0 8px rgba(240,180,41,0.6)" },
   heroTitle: { fontFamily: "inherit", fontSize: "clamp(28px, 4vw, 46px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 14, color: "#fff" },
