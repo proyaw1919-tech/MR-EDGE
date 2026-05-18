@@ -2779,8 +2779,8 @@ const styles = {
 
   mTime: { fontSize: 12, color: "#444", minWidth: 42, fontVariantNumeric: "tabular-nums" as const },
   mTeams: { display: "flex", alignItems: "center", gap: 14, flex: 1, justifyContent: "center" },
-  mTeamName: { fontFamily: "inherit", fontSize: 14, color: "#ccc", fontWeight: 600 },
-  vsChip: { fontSize: 10, color: "#333", background: "#16161E", padding: "3px 8px", borderRadius: 4 },
+  mTeamName: { fontFamily: "inherit", fontSize: 14, color: "#fff", fontWeight: 600 },
+  vsChip: { fontSize: 10, color: "#F0B429", background: "#16161E", padding: "3px 8px", borderRadius: 4, fontWeight: 700 },
   scoreBadge: { fontFamily: "inherit", fontSize: 16, color: "#fff", fontWeight: 700, padding: "4px 14px", background: "rgba(240,180,41,0.08)", border: "1px solid rgba(240,180,41,0.2)", borderRadius: 6 },
 
   mRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
