@@ -42,7 +42,7 @@ const FOOTBALL_IMG = "/football.jpg";
 const T = {
   en: {
     tagline: "MR.EDGE",
-    nav: { fixtures: "Fixtures", live: "Live Predictions", results: "Results", insights: "Insights", standings: "Standings", parlay: "Parlay" },
+    nav: { fixtures: "Fixtures", results: "Results", insights: "Insights", standings: "Standings", parlay: "Parlay" },
     heroLabel: "REAL FIXTURES · LIVE PREDICTIONS",
     heroTitle1: "READ THE GAME.",
     heroTitleEm: "WIN",
@@ -154,7 +154,7 @@ const T = {
   },
   zh: {
     tagline: "锋先生",
-    nav: { fixtures: "赛程", live: "实时预测", results: "结果", insights: "洞察", standings: "积分榜", parlay: "二串一" },
+    nav: { fixtures: "赛程", results: "结果", insights: "洞察", standings: "积分榜", parlay: "二串一" },
     heroLabel: "真实赛程 · 实时预测",
     heroTitle1: "读懂比赛。",
     heroTitleEm: "赢",
@@ -266,7 +266,7 @@ const T = {
   },
   ms: {
     tagline: "MR.EDGE",
-    nav: { fixtures: "Perlawanan", live: "Ramalan Langsung", results: "Keputusan", insights: "Analisis", standings: "Kedudukan", parlay: "Parlay" },
+    nav: { fixtures: "Perlawanan", results: "Keputusan", insights: "Analisis", standings: "Kedudukan", parlay: "Parlay" },
     heroLabel: "PERLAWANAN SEBENAR · RAMALAN LANGSUNG",
     heroTitle1: "Baca permainan.",
     heroTitleEm: "Menang",
@@ -995,11 +995,14 @@ Rules:
         <div className="bm8-nav-inner" style={styles.navInner}>
           {/* Logo */}
           <div style={styles.brandBlock}>
-            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 40, width: "auto", display: "block", flexShrink: 0 }} />
-            {lang === "zh"
-              ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
-              : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
-            }
+            <img src="/mr-edge-logo.png" alt="MR.EDGE" style={{ height: 46, width: "auto", display: "block", flexShrink: 0 }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {lang === "zh"
+                ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
+                : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
+              }
+              <span style={styles.navSubtitle}>AI PREDICTIVE INTELLIGENCE</span>
+            </div>
           </div>
 
           {/* Desktop nav */}
@@ -1072,24 +1075,21 @@ Rules:
       <section className="bm8-hero" style={styles.hero}>
         {/* Background image — scaled 20% for zoom effect */}
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/hero.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", transform: "scale(1.2)", transformOrigin: "center" }} />
+          <div className="bm8-hero-bg" style={{ position: "absolute", inset: 0, backgroundImage: "url('/hero.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", transform: "scale(1.0)", transformOrigin: "center" }} />
         </div>
         {/* dark overlay so text stays readable over any photo */}
         <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,15,0.62)", zIndex: 1 }} />
         <div style={{ ...styles.heroContent, position: "relative", zIndex: 2 }}>
           <div className="bm8-hero-label" style={styles.heroLabel}>
             <span style={styles.heroDot} />
-            {activeNav === "live" ? t.liveHeroLabel :
-             activeNav === "results" ? t.resultsHeroLabel :
+            {activeNav === "results" ? t.resultsHeroLabel :
              activeNav === "insights" ? t.insightsHeroLabel :
              activeNav === "standings" ? (lang === "zh" ? "积分榜 · 联赛排名" : lang === "ms" ? "KEDUDUKAN · JADUAL LIGA" : "STANDINGS · LEAGUE TABLE") :
              activeNav === "parlay" ? (t as any).parlayHeroLabel :
              t.heroLabel}
           </div>
           <h1 className="bm8-hero-title" style={styles.heroTitle}>
-            {activeNav === "live" ? (
-              <>{t.liveHeroTitle}</>
-            ) : activeNav === "results" ? (
+            {activeNav === "results" ? (
               <>{t.resultsHeroTitle}</>
             ) : activeNav === "insights" ? (
               <>{t.insightsHeroTitle}</>
@@ -1105,8 +1105,7 @@ Rules:
             )}
           </h1>
           <p className="bm8-hero-sub" style={styles.heroSub}>
-            {activeNav === "live" ? t.liveHeroSub :
-             activeNav === "results" ? t.resultsHeroSub :
+            {activeNav === "results" ? t.resultsHeroSub :
              activeNav === "insights" ? t.insightsHeroSub :
              activeNav === "standings" ? (lang === "zh" ? "查看各大联赛的最新积分榜排名、胜负数据和近期状态。" : lang === "ms" ? "Semak jadual terkini semua liga utama — kedudukan, mata, dan prestasi terkini pasukan." : "Check the latest standings for all major leagues — positions, points, and recent team form.") :
              activeNav === "parlay" ? (t as any).parlayHeroSub :
@@ -1116,7 +1115,7 @@ Rules:
       </section>
 
       {/* LEAGUE TAB BAR */}
-      {(activeNav === "fixtures" || activeNav === "live" || activeNav === "results") && (
+      {(activeNav === "fixtures" || activeNav === "results") && (
         <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0A0A0F", position: "sticky", top: 56, zIndex: 40 }}>
           <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0, overflowX: "auto" }}>
             {[
@@ -1270,18 +1269,6 @@ Rules:
         )}
 
         {/* ========== LIVE PREDICTIONS TAB ========== */}
-        {activeNav === "live" && (
-          <LivePredictionsView
-            matches={matches.filter((m) => m.status === "upcoming")}
-            onPredictMatch={predictMatch}
-            predictingId={predictingId}
-            t={t}
-            expandedResults={expandedResults}
-            expandedIds={expandedIds}
-            onToggleExpanded={toggleExpanded}
-          />
-        )}
-
         {/* ========== RESULTS TAB ========== */}
         {activeNav === "results" && (
           <ResultsView
@@ -2698,6 +2685,7 @@ const globalCSS = `
 
     /* Hero — keep enough height so background-size:cover shows same zoom as desktop */
     .bm8-hero { padding: 28px 16px 24px !important; min-height: 220px !important; }
+    .bm8-hero-bg { transform: scale(1.4) !important; }
     .bm8-hero-title { font-size: clamp(22px, 6vw, 30px) !important; margin-bottom: 8px !important; }
     .bm8-hero-sub { font-size: 12px !important; max-width: 100% !important; }
     .bm8-hero-label { font-size: 10px !important; margin-bottom: 10px !important; }
@@ -2778,8 +2766,9 @@ const styles = {
   topNav: { background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "0", position: "sticky", top: 0, zIndex: 50, height: 56 },
   navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
   brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
-  logoImg: { height: 36, width: "auto", display: "block" },
-  tagline: { fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
+  logoImg: { height: 46, width: "auto", display: "block" },
+  tagline: { fontFamily: "'Playfair Display', serif", fontSize: 25, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
+  navSubtitle: { fontSize: 8, fontWeight: 500, color: "#555", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
 
   navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
   navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
