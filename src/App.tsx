@@ -2821,7 +2821,7 @@ const globalCSS = `
 
     /* Hero — keep enough height so background-size:cover shows same zoom as desktop */
     .bm8-hero { padding: 28px 16px 24px !important; min-height: 220px !important; }
-    .bm8-hero-bg { transform: scale(1.4) !important; }
+    .bm8-hero-bg { transform: scale(1.0) !important; }
     .bm8-hero-title { font-size: clamp(22px, 6vw, 30px) !important; margin-bottom: 8px !important; }
     .bm8-hero-sub { font-size: 12px !important; max-width: 100% !important; }
     .bm8-hero-label { font-size: 10px !important; margin-bottom: 10px !important; }
