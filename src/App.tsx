@@ -774,6 +774,8 @@ export default function BM8Predictor() {
       let scorersBlock = "";
       let oddsBlock = "";
       let teamStatsBlock = "";
+      let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
+      let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
       let awayFormArr: string[] = [];
       if (!isRecent) {
@@ -830,6 +832,7 @@ ${lines.join("\n")}
                    (oAway.includes(mAway) || mAway.includes(oAway));
           });
           if (found?.homeOdds) {
+            capturedOddsFound = found;
             const toImpl = (x: number) => Math.round(100 / x);
             oddsBlock = `
 REAL BOOKMAKER ODDS (averaged across major EU bookmakers — market consensus is highly predictive):
@@ -853,6 +856,7 @@ Use these exact values in the matchOdds JSON field.
           if (s.avgRating != null) parts.push(`avg Sofascore rating ${s.avgRating}`);
           return `${name}: ${parts.join(" | ")}`;
         };
+        capturedTeamStats = teamStats;
         if (teamStats.home || teamStats.away) {
           teamStatsBlock = `
 ADVANCED TEAM STATISTICS THIS SEASON (Sofascore real data — use for xG-style analysis):
@@ -971,7 +975,7 @@ Rules:
       const usedModel = data.model || usedEndpoint;
       const result = parseFlexibleJSON(text);
       writeCache(match, lang, result);
-      setResult(match.id, { match, result, isRecent, loading: false, fromCache: false, usedModel, lang });
+      setResult(match.id, { match, result, isRecent, loading: false, fromCache: false, usedModel, lang, teamStats: capturedTeamStats, oddsFound: capturedOddsFound });
     } catch (e: any) {
       let errMsg = e.message || String(e);
       if (errMsg.includes("429")) errMsg = "Too many requests — please wait 60 seconds and try again.";
@@ -2411,14 +2415,14 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
             )}
           </div>
           {expandedData.result && isRecent && <RecentAnalysis match={match} result={expandedData.result} t={t} />}
-          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} />}
+          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} />}
         </div>
       )}
     </div>
   );
 }
 
-function UpcomingPrediction({ match, result, t, lang = "en" }: any) {
+function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound }: any) {
   const {
     predictedScore, winProbability,
     confidence, confidencePercent, riskLevel,
@@ -2592,6 +2596,37 @@ function UpcomingPrediction({ match, result, t, lang = "en" }: any) {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {(teamStats?.home || teamStats?.away || oddsFound?.homeOdds) && (
+        <div style={{ marginBottom: 18, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6 }}>
+          <div style={{ fontSize: 10, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8, fontWeight: 700 }}>📡 Data Sources</div>
+          {oddsFound?.homeOdds && (
+            <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 6 }}>
+              <span style={{ color: "#facc15" }}>💰</span> Bookmaker odds: Home <span style={{ color: "#e2e2e2" }}>{oddsFound.homeOdds}</span> · Draw <span style={{ color: "#e2e2e2" }}>{oddsFound.drawOdds}</span> · Away <span style={{ color: "#e2e2e2" }}>{oddsFound.awayOdds}</span>
+            </div>
+          )}
+          {teamStats?.home && (
+            <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>
+              <span style={{ color: "#ff3030" }}>🏠</span> {match.home}: {[
+                teamStats.home.possession != null && `${teamStats.home.possession}% poss`,
+                teamStats.home.onTargetPG != null && `${teamStats.home.onTargetPG} SoT/g`,
+                teamStats.home.bigChancesPG != null && `${teamStats.home.bigChancesPG} BC/g`,
+                teamStats.home.cleanSheets != null && `${teamStats.home.cleanSheets} CS`,
+              ].filter(Boolean).join(" · ")}
+            </div>
+          )}
+          {teamStats?.away && (
+            <div style={{ fontSize: 11, color: "#8a8a8a" }}>
+              <span style={{ color: "#60a5fa" }}>✈️</span> {match.away}: {[
+                teamStats.away.possession != null && `${teamStats.away.possession}% poss`,
+                teamStats.away.onTargetPG != null && `${teamStats.away.onTargetPG} SoT/g`,
+                teamStats.away.bigChancesPG != null && `${teamStats.away.bigChancesPG} BC/g`,
+                teamStats.away.cleanSheets != null && `${teamStats.away.cleanSheets} CS`,
+              ].filter(Boolean).join(" · ")}
+            </div>
+          )}
         </div>
       )}
 
