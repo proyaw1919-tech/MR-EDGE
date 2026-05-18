@@ -2743,7 +2743,7 @@ const styles = {
   heroDot: { width: 7, height: 7, borderRadius: "50%", background: "#F0B429", boxShadow: "0 0 8px rgba(240,180,41,0.6)" },
   heroTitle: { fontFamily: "inherit", fontSize: "clamp(28px, 4vw, 46px)", lineHeight: 1.1, letterSpacing: "-0.01em", fontWeight: 800, marginBottom: 14, color: "#fff" },
   heroEm: { fontStyle: "italic", background: "linear-gradient(90deg, #F0B429, #ff9500)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" },
-  heroSub: { fontSize: 13, lineHeight: 1.65, color: "#555", maxWidth: 440 },
+  heroSub: { fontSize: 13, lineHeight: 1.65, color: "#aaa", maxWidth: 440 },
   heroStats: { display: "flex", gap: 16, flexShrink: 0 },
   heroStat: { textAlign: "center" as const, padding: "16px 24px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 },
   heroStatVal: { fontSize: 26, fontWeight: 800, color: "#F0B429" },
