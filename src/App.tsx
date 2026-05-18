@@ -153,7 +153,7 @@ const T = {
     parlayRegenerate: "New Picks",
   },
   zh: {
-    tagline: "MR.EDGE",
+    tagline: "锋先生",
     nav: { fixtures: "赛程", live: "实时预测", results: "结果", insights: "洞察", standings: "积分榜", parlay: "二串一" },
     heroLabel: "真实赛程 · 实时预测",
     heroTitle1: "点击比赛,",
@@ -996,7 +996,10 @@ Rules:
           {/* Logo */}
           <div style={styles.brandBlock}>
             <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #F0B429, #ff9500)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#000", letterSpacing: "-0.05em", flexShrink: 0 }}>ME</div>
-            <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
+            {lang === "zh"
+              ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
+              : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
+            }
           </div>
 
           {/* Desktop nav */}
