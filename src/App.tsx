@@ -1074,7 +1074,7 @@ Rules:
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {lang === "zh"
                 ? <span style={styles.tagline}><span style={{ color: "#F0B429" }}>锋</span>先生</span>
-                : <span style={styles.tagline}>MR<span style={{ color: "#F0B429" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
+                : <span style={styles.tagline}>MR<span style={{ color: "#fff" }}>.</span><span style={{ color: "#F0B429" }}>EDGE</span></span>
               }
               <span style={styles.navSubtitle}>AI PREDICTIVE INTELLIGENCE</span>
             </div>
@@ -2882,7 +2882,7 @@ const styles = {
 
   topNav: { background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "0", position: "sticky", top: 0, zIndex: 50, height: 56 },
   navInner: { maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 24, height: "100%" },
-  brandBlock: { display: "flex", alignItems: "center", gap: 4, flexShrink: 0 },
+  brandBlock: { display: "flex", alignItems: "center", gap: 1, flexShrink: 0 },
   logoImg: { height: 46, width: "auto", display: "block" },
   tagline: { fontFamily: "'Playfair Display', serif", fontSize: 25, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
   navSubtitle: { fontSize: 8, fontWeight: 500, color: "#fff", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
@@ -2892,7 +2892,7 @@ const styles = {
   navLinkActive: { color: "#000", background: "linear-gradient(135deg, #C9A84C, #F0B429)", fontWeight: 700, boxShadow: "0 2px 10px rgba(240,180,41,0.4)" },
   navLinkUnderline: { display: "none" },
 
-  menuBtn: { display: "none", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto" },
+  menuBtn: { display: "none", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", color: "#000", padding: 8, borderRadius: 6, cursor: "pointer", alignItems: "center", justifyContent: "center", marginLeft: "auto", boxShadow: "0 2px 10px rgba(240,180,41,0.4)" },
 
   mobileMenu: { position: "absolute", top: "100%", left: 0, right: 0, background: "#0A0A0F", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 24px", display: "flex", flexDirection: "column", gap: 4 },
   mobileNavLink: { background: "transparent", border: "none", color: "#8a8a8a", fontSize: 14, fontFamily: "inherit", cursor: "pointer", padding: "12px 8px", textAlign: "left", borderRadius: 6 },
