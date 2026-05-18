@@ -2818,7 +2818,7 @@ const styles = {
   brandBlock: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   logoImg: { height: 46, width: "auto", display: "block" },
   tagline: { fontFamily: "'Playfair Display', serif", fontSize: 25, fontWeight: 700, color: "#fff", letterSpacing: "0.08em", whiteSpace: "nowrap" as const },
-  navSubtitle: { fontSize: 8, fontWeight: 500, color: "#555", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
+  navSubtitle: { fontSize: 8, fontWeight: 500, color: "#fff", letterSpacing: "0.22em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const },
 
   navLinks: { display: "flex", gap: 2, flex: 1, justifyContent: "center" },
   navLink: { background: "transparent", border: "none", color: "#555", fontSize: 12, fontFamily: "inherit", cursor: "pointer", padding: "6px 12px", borderRadius: 6, position: "relative", transition: "all 0.15s", whiteSpace: "nowrap" as const },
