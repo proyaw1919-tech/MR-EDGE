@@ -739,6 +739,15 @@ export default function BM8Predictor() {
     } catch { return { injuries: null, prediction: null }; }
   };
 
+  const fetchLineups = async (match: any) => {
+    if (!match.matchId) return { lineup: null };
+    try {
+      const r = await fetch(`/api/lineups?matchId=${match.matchId}`);
+      if (!r.ok) return { lineup: null };
+      return r.json();
+    } catch { return { lineup: null }; }
+  };
+
   const fetchWeather = async (match: any) => {
     try {
       const r = await fetch(`/api/weather?home=${encodeURIComponent(match.home)}&date=${encodeURIComponent(match.rawDate || match.date || '')}`);
@@ -792,18 +801,20 @@ export default function BM8Predictor() {
       let oddsBlock = "";
       let teamStatsBlock = "";
       let injuriesBlock = "";
+      let lineupBlock = "";
       let weatherBlock = "";
       let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
       let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
       let awayFormArr: string[] = [];
       if (!isRecent) {
-        const [standings, allScorers, leagueOdds, teamStats, apiFootball, weatherData] = await Promise.all([
+        const [standings, allScorers, leagueOdds, teamStats, apiFootball, lineupsData, weatherData] = await Promise.all([
           fetchStandingsForMatch(match.league),
           fetchTopScorers(match.league),
           fetchOddsForLeague(match.league),
           fetchTeamStats(match.home, match.away),
           fetchApiFootball(match),
+          fetchLineups(match),
           fetchWeather(match),
         ]);
 
@@ -909,6 +920,20 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
           }
         }
 
+        // Build lineup block
+        const lu = lineupsData?.lineup;
+        if (lu) {
+          const fmtPlayers = (players: any[]) => players.map(p => `${p.name} (${p.position})`).join(", ");
+          const lines: string[] = [];
+          if (lu.home?.formation) lines.push(`${match.home} formation: ${lu.home.formation}`);
+          if (lu.home?.starting?.length) lines.push(`${match.home} XI: ${fmtPlayers(lu.home.starting)}`);
+          if (lu.home?.bench?.length) lines.push(`${match.home} bench: ${fmtPlayers(lu.home.bench)}`);
+          if (lu.away?.formation) lines.push(`${match.away} formation: ${lu.away.formation}`);
+          if (lu.away?.starting?.length) lines.push(`${match.away} XI: ${fmtPlayers(lu.away.starting)}`);
+          if (lu.away?.bench?.length) lines.push(`${match.away} bench: ${fmtPlayers(lu.away.bench)}`);
+          if (lines.length) lineupBlock = `\nCONFIRMED LINEUPS (use these — key absences or unexpected selections heavily impact outcome):\n${lines.join("\n")}\n`;
+        }
+
         // Build weather block
         const w = weatherData?.weather;
         if (w) {
@@ -958,7 +983,7 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${weatherBlock}
+${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}
 Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:
