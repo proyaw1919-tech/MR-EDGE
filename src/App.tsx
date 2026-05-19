@@ -925,10 +925,20 @@ ${lines.join("\n")}
           if (found?.homeOdds) {
             capturedOddsFound = found;
             const toImpl = (x: number) => Math.round(100 / x);
+            const fmtMove = (open: number | null, curr: number, pct: number | null, signal: string) => {
+              if (!open || pct === null || Math.abs(pct) < 1) return `${curr}`;
+              return `${open}→${curr} (${pct > 0 ? "+" : ""}${pct}% ${pct < 0 ? "▼" : "▲"} ${signal})`;
+            };
+            const hasMovement = found.openingHome && found.openingHome !== found.homeOdds;
             oddsBlock = `
 REAL BOOKMAKER ODDS (averaged across major EU bookmakers — market consensus is highly predictive):
 1X2 Decimal: Home ${found.homeOdds} | Draw ${found.drawOdds} | Away ${found.awayOdds}
 Implied win probability: Home ${toImpl(found.homeOdds)}% | Draw ${toImpl(found.drawOdds)}% | Away ${toImpl(found.awayOdds)}%
+${hasMovement ? `ODDS MOVEMENT (sharp money signal):
+  Home: ${fmtMove(found.openingHome, found.homeOdds, found.homeMove, found.homeSignal || "")}
+  Draw: ${fmtMove(found.openingDraw, found.drawOdds, found.drawMove, found.drawSignal || "")}
+  Away: ${fmtMove(found.openingAway, found.awayOdds, found.awayMove, found.awaySignal || "")}
+  Shortened odds = sharp money backing that outcome. Drifting odds = market fading that side.` : ""}
 Use these exact values in the matchOdds JSON field.
 `;
           }
