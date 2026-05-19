@@ -623,8 +623,9 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+  const CACHE_VERSION = "v3"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
-    return `bm8_pred_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
+    return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
 
   const readCache = (match, language) => {
