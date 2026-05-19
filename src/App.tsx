@@ -2123,27 +2123,30 @@ Provide a clear, informative answer in 2-4 paragraphs. Use bullet points or shor
       </div>
 
       {(() => {
-        const acc = getAccuracyStats();
-        if (!acc.total) return null;
-        return (
-          <div style={{ padding: "14px 16px", background: "rgba(240,180,41,0.05)", border: "1px solid rgba(240,180,41,0.15)", borderRadius: 10, marginTop: 4, marginBottom: 28 }}>
-            <div style={{ fontSize: 9, color: "#F0B429", letterSpacing: "0.2em", fontWeight: 700, marginBottom: 6 }}>MY PREDICTION ACCURACY</div>
-            <div style={{ display: "flex", gap: 20, alignItems: "flex-end" }}>
-              <div>
-                <div style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, color: "#F0B429", lineHeight: 1 }}>{acc.pct}%</div>
-                <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Win/Draw/Loss</div>
+        try {
+          if (typeof getAccuracyStats !== "function") return null;
+          const acc = getAccuracyStats();
+          if (!acc || !acc.total) return null;
+          return (
+            <div style={{ padding: "14px 16px", background: "rgba(240,180,41,0.05)", border: "1px solid rgba(240,180,41,0.15)", borderRadius: 10, marginTop: 4, marginBottom: 28 }}>
+              <div style={{ fontSize: 9, color: "#F0B429", letterSpacing: "0.2em", fontWeight: 700, marginBottom: 6 }}>MY PREDICTION ACCURACY</div>
+              <div style={{ display: "flex", gap: 20, alignItems: "flex-end" }}>
+                <div>
+                  <div style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, color: "#F0B429", lineHeight: 1 }}>{acc.pct}%</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Win/Draw/Loss</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#888", lineHeight: 1 }}>{acc.correct}/{acc.total}</div>
+                  <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Correct outcomes</div>
+                </div>
+                {acc.scoreCorrect > 0 && <div>
+                  <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#555", lineHeight: 1 }}>{acc.scoreCorrect}</div>
+                  <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Exact scores</div>
+                </div>}
               </div>
-              <div>
-                <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#888", lineHeight: 1 }}>{acc.correct}/{acc.total}</div>
-                <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Correct outcomes</div>
-              </div>
-              {acc.scoreCorrect > 0 && <div>
-                <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#555", lineHeight: 1 }}>{acc.scoreCorrect}</div>
-                <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Exact scores</div>
-              </div>}
             </div>
-          </div>
-        );
+          );
+        } catch { return null; }
       })()}
 
       <div style={{ marginBottom: 32 }}>
