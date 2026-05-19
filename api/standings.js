@@ -89,7 +89,8 @@ export default async function handler(req, res) {
 
   try {
     // Fetch standings + recent matches in parallel for form calculation
-    const dateFrom = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // 60 days to get enough home/away form data
+    const dateFrom = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const dateTo   = new Date().toISOString().split('T')[0];
 
     const [standingsRes, matchesRes] = await Promise.all([
@@ -116,8 +117,10 @@ export default async function handler(req, res) {
     const awayMap = {};
     for (const r of awayTable) awayMap[r.team?.id] = r;
 
-    // Build form map from recent matches { teamName: ["W","D","L",...] }
+    // Build overall, home-only and away-only form maps
     const formMap = {};
+    const homeFormMap = {};
+    const awayFormMap = {};
     if (matchesRes.ok) {
       const matchData = await matchesRes.json();
       for (const m of (matchData.matches || [])) {
@@ -126,10 +129,17 @@ export default async function handler(req, res) {
         const hg = m.score?.fullTime?.home;
         const ag = m.score?.fullTime?.away;
         if (hg === null || hg === undefined || ag === null || ag === undefined) continue;
+        // Overall form
         if (!formMap[home]) formMap[home] = [];
         if (!formMap[away]) formMap[away] = [];
         formMap[home].push(hg > ag ? "W" : hg < ag ? "L" : "D");
         formMap[away].push(ag > hg ? "W" : ag < hg ? "L" : "D");
+        // Home-only form (for the home team)
+        if (!homeFormMap[home]) homeFormMap[home] = [];
+        homeFormMap[home].push(hg > ag ? "W" : hg < ag ? "L" : "D");
+        // Away-only form (for the away team)
+        if (!awayFormMap[away]) awayFormMap[away] = [];
+        awayFormMap[away].push(ag > hg ? "W" : ag < hg ? "L" : "D");
       }
     }
 
@@ -152,6 +162,8 @@ export default async function handler(req, res) {
         gd: row.goalDifference,
         points: row.points,
         form: recentForm.join(","),
+        homeForm: (homeFormMap[teamName] || []).slice(-5).join(","),
+        awayForm: (awayFormMap[teamName] || []).slice(-5).join(","),
         // Home/Away splits
         homePlayed: hr?.playedGames ?? null,
         homeWon:    hr?.won         ?? null,

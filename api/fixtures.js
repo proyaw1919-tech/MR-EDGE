@@ -253,7 +253,7 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: "Server configuration error." });
 
   const today = new Date();
-  const from  = new Date(today); from.setDate(from.getDate() - 3);
+  const from  = new Date(today); from.setDate(from.getDate() - 7);
   const to    = new Date(today); to.setDate(to.getDate() + 6);
   const dateFrom = from.toISOString().split('T')[0];
   const dateTo   = to.toISOString().split('T')[0];

@@ -679,16 +679,38 @@ export default function BM8Predictor() {
 
   const buildTeamStatsLine = (row: any, name: string, isHome: boolean) => {
     if (!row) return `${name}: No standings data available`;
-    const formStr = row.form
-      ? row.form.split(",").slice(-5).join("-")
-      : "N/A";
+    const formStr = row.form ? row.form.split(",").slice(-5).join("-") : "N/A";
+    // Attack/defense strength (pseudo-xG) — overall season average
+    const atkPPG = row.played > 0 ? (row.gf / row.played).toFixed(2) : "N/A";
+    const defPPG = row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A";
     let splitStr = "";
-    if (isHome && row.homePlayed != null) {
-      splitStr = ` | Home record: ${row.homeWon}W-${row.homeDraw}D-${row.homeLost}L (GF:${row.homeGf} GA:${row.homeGa})`;
-    } else if (!isHome && row.awayPlayed != null) {
-      splitStr = ` | Away record: ${row.awayWon}W-${row.awayDraw}D-${row.awayLost}L (GF:${row.awayGf} GA:${row.awayGa})`;
+    let venueFormStr = "";
+    if (isHome && row.homePlayed != null && row.homePlayed > 0) {
+      const homeAtk = (row.homeGf / row.homePlayed).toFixed(2);
+      const homeDef = (row.homeGa / row.homePlayed).toFixed(2);
+      splitStr = ` | AT HOME: ${row.homeWon}W-${row.homeDraw}D-${row.homeLost}L — scores ${homeAtk} goals/game, concedes ${homeDef}/game`;
+      if (row.homeForm) venueFormStr = ` | Home form (oldest→newest): ${row.homeForm.split(",").join("-")}`;
+    } else if (!isHome && row.awayPlayed != null && row.awayPlayed > 0) {
+      const awayAtk = (row.awayGf / row.awayPlayed).toFixed(2);
+      const awayDef = (row.awayGa / row.awayPlayed).toFixed(2);
+      splitStr = ` | AWAY: ${row.awayWon}W-${row.awayDraw}D-${row.awayLost}L — scores ${awayAtk} goals/game, concedes ${awayDef}/game`;
+      if (row.awayForm) venueFormStr = ` | Away form (oldest→newest): ${row.awayForm.split(",").join("-")}`;
     }
-    return `${name}: League pos #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | GF:${row.gf} GA:${row.ga} GD:${row.gd >= 0 ? "+" : ""}${row.gd} | Last 5 form (oldest→newest): ${formStr}${splitStr}`;
+    return `${name}: #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | Season avg: ${atkPPG} scored/g, ${defPPG} conceded/g | Last 5: ${formStr}${splitStr}${venueFormStr}`;
+  };
+
+  const calcDaysRest = (teamName: string, matchRawDate: string, allMatches: any[]): number | null => {
+    const norm = (n: string) => n.toLowerCase().trim();
+    const teamNorm = norm(teamName);
+    const matchDate = new Date(matchRawDate);
+    const prev = allMatches
+      .filter(m => m.status === "recent" &&
+        (norm(m.home) === teamNorm || norm(m.away) === teamNorm) &&
+        m.rawDate && new Date(m.rawDate) < matchDate)
+      .sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
+    if (!prev.length) return null;
+    const days = Math.floor((matchDate.getTime() - new Date(prev[0].rawDate).getTime()) / 86400000);
+    return days;
   };
 
   // ====================== TOP SCORERS CACHE ======================
@@ -949,6 +971,20 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
         ? `Use this real form for awayForm (oldest→newest, pad with "?" if <5): [${awayFormArr.map(x => `"${x}"`).join(", ")}]`
         : `Estimate awayForm from your knowledge.`;
 
+      // Days rest — squad freshness
+      let daysRestBlock = "";
+      if (match.rawDate) {
+        const homeDays = calcDaysRest(match.home, match.rawDate, matches);
+        const awayDays = calcDaysRest(match.away, match.rawDate, matches);
+        const fmtRest = (team: string, days: number | null) => {
+          if (days === null) return null;
+          const fatigue = days <= 3 ? " ⚠️ FATIGUE RISK — likely tired legs" : days <= 5 ? " (normal turnaround)" : " (well rested)";
+          return `  ${team}: ${days} days since last match${fatigue}`;
+        };
+        const lines = [fmtRest(match.home, homeDays), fmtRest(match.away, awayDays)].filter(Boolean);
+        if (lines.length) daysRestBlock = `\nSQUAD FRESHNESS (factor this into prediction):\n${lines.join("\n")}\n`;
+      }
+
       // 4. Fetch H2H history (upcoming matches only, requires matchId)
       let h2hBlock = "";
       if (!isRecent && match.matchId) {
@@ -982,7 +1018,7 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}
+${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}${daysRestBlock}
 Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:
