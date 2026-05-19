@@ -1006,6 +1006,13 @@ Respond ONLY with valid JSON in this EXACT structure:
 }
 
 Rules:
+- predictedScore MUST be realistic and conservative:
+  * Most football matches (70%+) end with 2 or fewer total goals — DO NOT over-predict goals
+  * Even heavy favourites at home rarely win by more than 2 goals: prefer 1-0 or 2-0 over 3-0
+  * If the away team has a solid defensive record (conceding < 1.2 goals/game) or is defensive by style, cap away goals conceded at 1
+  * Use estGoals (xG-based) as your anchor: if xG suggests ~1.5 total goals, predict 1-0 or 1-1, NOT 3-0
+  * Never predict a scoreline where total goals > 4 unless xG data or H2H history strongly supports it
+  * Typical EPL scorelines by match type — Defensive/Cagey: 1-0, 0-0; Balanced: 1-0, 1-1, 2-1; Open/End-to-end: 2-1, 2-2; High-scoring: 3-1, 3-2
 - winProbability values must sum to 100
 - confidencePercent calibration (cross-reference ALL available data before deciding):
   * 80-90%: Strong favourite — clear standings gap (5+ positions), positive H2H record (4+ wins in last 6), good recent form (3W+ in last 5). Example: top-4 team vs bottom-3 team at home.
