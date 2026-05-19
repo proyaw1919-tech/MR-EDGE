@@ -509,10 +509,6 @@ export default function BM8Predictor() {
   const [statusError, setStatusError] = useState(false);
   const [predictingId, setPredictingId] = useState(null);
   const [liveScores, setLiveScores] = useState<Map<string, any>>(new Map());
-  const [betSlip, setBetSlip] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem("mr-edge-betslip") || "[]"); } catch { return []; }
-  });
-  const [betSlipOpen, setBetSlipOpen] = useState(false);
   const [predHistory, setPredHistory] = useState<any[]>(() => {
     try { return JSON.parse(localStorage.getItem("mr-edge-predictions") || "[]"); } catch { return []; }
   });
@@ -721,17 +717,6 @@ export default function BM8Predictor() {
     return days;
   };
 
-  const addToBetSlip = (item: any) => {
-    const newSlip = [...betSlip.filter((b: any) => !(b.home === item.home && b.away === item.away && b.pick === item.pick)), { ...item, slipId: Date.now() }];
-    setBetSlip(newSlip);
-    localStorage.setItem("mr-edge-betslip", JSON.stringify(newSlip));
-  };
-  const removeFromSlip = (slipId: number) => {
-    const newSlip = betSlip.filter((b: any) => b.slipId !== slipId);
-    setBetSlip(newSlip);
-    localStorage.setItem("mr-edge-betslip", JSON.stringify(newSlip));
-  };
-  const clearSlip = () => { setBetSlip([]); localStorage.removeItem("mr-edge-betslip"); };
   const savePredHistory = (match: any, result: any) => {
     const prob = result.winProbability || {};
     const predictedWinner = prob.home > prob.away && prob.home > prob.draw ? "home"
@@ -1465,7 +1450,6 @@ Rules:
                           isExpanded={expandedIds.has(match.id)}
                           onToggle={() => toggleExpanded(match.id)}
                           liveScores={liveScores}
-                          onAddToSlip={addToBetSlip}
                         />
                       ))}
                     </div>
@@ -1516,43 +1500,6 @@ Rules:
         <span>{t.footer3}</span>
       </footer>
 
-      {/* Bet Slip */}
-      {betSlip.length > 0 && (
-        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 1000 }}>
-          {betSlipOpen && (
-            <div style={{ position: "absolute", bottom: "calc(100% + 12px)", right: 0, width: 300, background: "#13131a", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 12, boxShadow: "0 8px 40px rgba(0,0,0,0.6)", overflow: "hidden" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(240,180,41,0.06)" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#F0B429" }}>BET SLIP ({betSlip.length})</span>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={clearSlip} style={{ fontSize: 10, color: "#666", background: "none", border: "none", cursor: "pointer" }}>CLEAR ALL</button>
-                  <button onClick={() => setBetSlipOpen(false)} style={{ color: "#888", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}>×</button>
-                </div>
-              </div>
-              <div style={{ maxHeight: 320, overflowY: "auto", padding: "8px" }}>
-                {betSlip.map((b: any) => (
-                  <div key={b.slipId} style={{ padding: "10px 12px", background: "#1a1a24", borderRadius: 8, marginBottom: 6, position: "relative" }}>
-                    <button onClick={() => removeFromSlip(b.slipId)} style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 14 }}>×</button>
-                    <div style={{ fontSize: 11, color: "#888", marginBottom: 2 }}>{b.league} · {b.date}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#ccc", marginBottom: 4 }}>{b.home} vs {b.away}</div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#F0B429" }}>→ {b.pick}</span>
-                      {b.odds > 0 && <span style={{ fontSize: 12, color: "#888" }}>@ {b.odds.toFixed(2)}</span>}
-                    </div>
-                    {b.confidence && <div style={{ fontSize: 10, color: "#555", marginTop: 3 }}>AI Confidence: {b.confidence}%</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setBetSlipOpen(!betSlipOpen)}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", borderRadius: 50, color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 20px rgba(240,180,41,0.5)", letterSpacing: "0.05em" }}
-          >
-            📋 <span>SLIP</span>
-            <span style={{ background: "#000", color: "#F0B429", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>{betSlip.length}</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -2472,7 +2419,7 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, onToggle, liveScores, onAddToSlip }) {
+function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, onToggle, liveScores }) {
   const isRecent = match.status === "recent";
   const liveData = liveScores?.get(`${match.home}|${match.away}`);
   return (
@@ -2572,14 +2519,14 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
             )}
           </div>
           {expandedData.result && isRecent && <RecentAnalysis match={match} result={expandedData.result} t={t} />}
-          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} onAddToSlip={onAddToSlip} />}
+          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} />}
         </div>
       )}
     </div>
   );
 }
 
-function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound, onAddToSlip }: any) {
+function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound }: any) {
   const {
     predictedScore, winProbability,
     confidence, confidencePercent, riskLevel,
@@ -2841,21 +2788,6 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
         </div>
       )}
 
-      {onAddToSlip && (
-        <button
-          onClick={() => onAddToSlip({
-            home: match.home, away: match.away, league: match.league, date: match.date,
-            pick: prob.home > prob.away && prob.home > prob.draw ? match.home
-              : prob.away > prob.draw ? match.away : (t.drawCap || "Draw"),
-            odds: prob.home > prob.away && prob.home > prob.draw ? parseFloat(matchOdds?.home || 0)
-              : prob.away > prob.draw ? parseFloat(matchOdds?.away || 0) : parseFloat(matchOdds?.draw || 0),
-            confidence: confPct,
-          })}
-          style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer", letterSpacing: "0.05em", marginTop: 4 }}
-        >
-          + ADD TO BET SLIP
-        </button>
-      )}
     </>
   );
 }
