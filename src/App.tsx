@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import {
   Sparkles, Loader2, RefreshCw, X, Search, Brain, AlertTriangle,
   Star, Trophy, Globe, ArrowRight, Menu, Calendar, CheckCircle,
-  BarChart2, List, Layers
+  BarChart2, List, Layers, ChevronDown
 } from "lucide-react";
 
 // Robust JSON parser
@@ -500,6 +500,7 @@ export default function BM8Predictor() {
   const [matches, setMatches] = useState(() => getDefaultMatches());
   const [filter, setFilter] = useState("upcoming");
   const [league, setLeague] = useState("all");
+  const [leagueDropdownOpen, setLeagueDropdownOpen] = useState(false);
   const [predFilter, setPredFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo]   = useState("");
@@ -1322,38 +1323,85 @@ Rules:
         </div>
       </section>
 
-      {/* LEAGUE TAB BAR */}
-      {(activeNav === "fixtures" || activeNav === "results") && (
-        <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0A0A0F", position: "sticky", top: 56, zIndex: 40 }}>
-          <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0, overflowX: "auto" }}>
-            {[
-              { key: "all", label: "All" },
-              { key: "EPL", label: "EPL" },
-              { key: "LaLiga", label: "La Liga" },
-              { key: "SerieA", label: "Serie A" },
-              { key: "Bundesliga", label: "Bundesliga" },
-              { key: "Ligue1", label: "Ligue 1" },
-              { key: "UCL", label: "UCL" },
-              { key: "UEL", label: "Europa League" },
-            ].map((tab) => (
+      {/* LEAGUE DROPDOWN BUTTON */}
+      {(activeNav === "fixtures" || activeNav === "results") && (() => {
+        const LEAGUE_OPTS = [
+          { key: "all", label: lang === "zh" ? "所有联赛" : lang === "ms" ? "Semua Liga" : "All Leagues" },
+          { key: "EPL", label: "EPL" },
+          { key: "LaLiga", label: "La Liga" },
+          { key: "SerieA", label: "Serie A" },
+          { key: "Bundesliga", label: "Bundesliga" },
+          { key: "Ligue1", label: "Ligue 1" },
+          { key: "UCL", label: "UCL" },
+          { key: "UEL", label: "Europa League" },
+          { key: "Eredivisie", label: "Eredivisie" },
+          { key: "PrimeiraLiga", label: "Primeira Liga" },
+          { key: "Championship", label: "Championship" },
+          { key: "Brasileirao", label: "Brasileirão" },
+        ];
+        const selectedLabel = LEAGUE_OPTS.find(o => o.key === league)?.label ?? "All Leagues";
+        return (
+          <div style={{ background: "#0A0A0F", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "sticky", top: 56, zIndex: 40, padding: "10px 16px" }}>
+            <div style={{ maxWidth: 1400, margin: "0 auto", position: "relative", display: "inline-block" }}>
+              {/* Trigger button */}
               <button
-                key={tab.key}
-                onClick={() => { setLeague(tab.key); setExpandedIds(new Set()); }}
+                onClick={() => setLeagueDropdownOpen(v => !v)}
                 style={{
-                  fontSize: 12, color: league === tab.key ? "#F0B429" : "#555",
-                  padding: "12px 16px", cursor: "pointer",
-                  borderTop: "none", borderLeft: "none", borderRight: "none",
-                  borderBottom: `2px solid ${league === tab.key ? "#F0B429" : "transparent"}`,
-                  background: "transparent", transition: "all 0.15s",
-                  whiteSpace: "nowrap" as const, fontFamily: "inherit",
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: league !== "all" ? "rgba(240,180,41,0.12)" : "rgba(255,255,255,0.06)",
+                  border: `1.5px solid ${league !== "all" ? "#F0B429" : "rgba(255,255,255,0.12)"}`,
+                  borderRadius: 8, padding: "7px 14px", cursor: "pointer",
+                  color: league !== "all" ? "#F0B429" : "#ccc",
+                  fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                  transition: "all 0.15s",
                 }}
               >
-                {tab.label}
+                <span style={{ fontSize: 14 }}>⚽</span>
+                <span>{selectedLabel}</span>
+                <ChevronDown size={14} style={{ transform: leagueDropdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
               </button>
-            ))}
+
+              {/* Dropdown panel */}
+              {leagueDropdownOpen && (
+                <>
+                  {/* Backdrop to close on outside click */}
+                  <div
+                    onClick={() => setLeagueDropdownOpen(false)}
+                    style={{ position: "fixed", inset: 0, zIndex: 49 }}
+                  />
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 6px)", left: 0,
+                    background: "#13131A", border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10, overflow: "hidden", zIndex: 50,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+                    minWidth: 180,
+                  }}>
+                    {LEAGUE_OPTS.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setLeague(opt.key); setExpandedIds(new Set()); setLeagueDropdownOpen(false); }}
+                        style={{
+                          display: "block", width: "100%", textAlign: "left",
+                          padding: "10px 16px", background: league === opt.key ? "rgba(240,180,41,0.15)" : "transparent",
+                          border: "none", cursor: "pointer", fontFamily: "inherit",
+                          fontSize: 13, fontWeight: league === opt.key ? 700 : 400,
+                          color: league === opt.key ? "#F0B429" : "#ccc",
+                          borderLeft: `3px solid ${league === opt.key ? "#F0B429" : "transparent"}`,
+                          transition: "background 0.12s",
+                        }}
+                        onMouseEnter={e => { if (league !== opt.key) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; }}
+                        onMouseLeave={e => { if (league !== opt.key) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <main className="bm8-main" style={styles.main}>
         {/* ========== FIXTURES TAB ========== */}
@@ -1948,6 +1996,7 @@ function LivePredictionsView({ matches, onPredictMatch, predictingId, t, expande
 // ============================== RESULTS VIEW =================================
 function ResultsView({ matches, onPredictMatch, predictingId, t, expandedResults, expandedIds, onToggleExpanded }) {
   const [leagueFilter, setLeagueFilter] = useState("all");
+  const [resultsDropdownOpen, setResultsDropdownOpen] = useState(false);
 
   const filtered = useMemo(() => {
     if (leagueFilter === "all") return matches;
@@ -1966,6 +2015,8 @@ function ResultsView({ matches, onPredictMatch, predictingId, t, expandedResults
   const homeWins = matches.filter((m) => m.homeScore > m.awayScore).length;
   const awayWins = matches.filter((m) => m.awayScore > m.homeScore).length;
 
+  const resultsLeagueLabel = leagueFilter === "all" ? "All Leagues" : (LEAGUE_LABELS[leagueFilter] || leagueFilter);
+
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
@@ -1977,22 +2028,62 @@ function ResultsView({ matches, onPredictMatch, predictingId, t, expandedResults
         <StatCard label="Away Wins" value={awayWins} color="#fff" />
       </div>
 
-      <div style={styles.leagueRow}>
+      {/* League dropdown */}
+      <div style={{ marginBottom: 16, position: "relative", display: "inline-block" }}>
         <button
-          onClick={() => setLeagueFilter("all")}
-          style={{ ...styles.leagueChip, ...(leagueFilter === "all" ? styles.leagueChipActive : {}) }}
+          onClick={() => setResultsDropdownOpen(v => !v)}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: leagueFilter !== "all" ? "rgba(240,180,41,0.12)" : "rgba(255,255,255,0.06)",
+            border: `1.5px solid ${leagueFilter !== "all" ? "#F0B429" : "rgba(255,255,255,0.12)"}`,
+            borderRadius: 8, padding: "7px 14px", cursor: "pointer",
+            color: leagueFilter !== "all" ? "#F0B429" : "#ccc",
+            fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+          }}
         >
-          All
+          <span style={{ fontSize: 14 }}>⚽</span>
+          <span>{resultsLeagueLabel}</span>
+          <ChevronDown size={14} style={{ transform: resultsDropdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
         </button>
-        {leaguesWithResults.map((lg) => (
-          <button
-            key={lg}
-            onClick={() => setLeagueFilter(lg)}
-            style={{ ...styles.leagueChip, ...(leagueFilter === lg ? styles.leagueChipActive : {}) }}
-          >
-            {LEAGUE_LABELS[lg] || lg}
-          </button>
-        ))}
+        {resultsDropdownOpen && (
+          <>
+            <div onClick={() => setResultsDropdownOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 49 }} />
+            <div style={{
+              position: "absolute", top: "calc(100% + 6px)", left: 0,
+              background: "#13131A", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 10, overflow: "hidden", zIndex: 50,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.6)", minWidth: 180,
+            }}>
+              <button
+                onClick={() => { setLeagueFilter("all"); setResultsDropdownOpen(false); }}
+                style={{
+                  display: "block", width: "100%", textAlign: "left",
+                  padding: "10px 16px",
+                  background: leagueFilter === "all" ? "rgba(240,180,41,0.15)" : "transparent",
+                  border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13,
+                  fontWeight: leagueFilter === "all" ? 700 : 400,
+                  color: leagueFilter === "all" ? "#F0B429" : "#ccc",
+                  borderLeft: `3px solid ${leagueFilter === "all" ? "#F0B429" : "transparent"}`,
+                }}
+              >All Leagues</button>
+              {leaguesWithResults.map((lg) => (
+                <button
+                  key={lg}
+                  onClick={() => { setLeagueFilter(lg); setResultsDropdownOpen(false); }}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    padding: "10px 16px",
+                    background: leagueFilter === lg ? "rgba(240,180,41,0.15)" : "transparent",
+                    border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13,
+                    fontWeight: leagueFilter === lg ? 700 : 400,
+                    color: leagueFilter === lg ? "#F0B429" : "#ccc",
+                    borderLeft: `3px solid ${leagueFilter === lg ? "#F0B429" : "transparent"}`,
+                  }}
+                >{LEAGUE_LABELS[lg] || lg}</button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div style={{ fontSize: 12, color: "#8a8a8a", marginBottom: 20, fontFamily: "inherit", paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
