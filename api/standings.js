@@ -1,4 +1,112 @@
-// api/standings.js — Returns league standings table
+// api/standings.js — Returns league standings table + Understat xG data
+
+// Understat league key map (only leagues covered by understat.com)
+const UNDERSTAT_LEAGUE_MAP = {
+  EPL:       'EPL',
+  LaLiga:    'La_liga',
+  Bundesliga:'Bundesliga',
+  SerieA:    'Serie_A',
+  Ligue1:    'Ligue_1',
+};
+
+// Normalize Understat team names → our canonical names
+const UNDERSTAT_NAME_MAP = {
+  "Manchester City":      "Man City",
+  "Manchester United":    "Man United",
+  "Tottenham":            "Tottenham",
+  "Wolverhampton Wanderers": "Wolves",
+  "Brighton":             "Brighton",
+  "Nottingham Forest":    "Nottingham Forest",
+  "Newcastle United":     "Newcastle United",
+  "West Ham":             "West Ham United",
+  "Bayern Munich":        "Bayern Munich",
+  "Bayer Leverkusen":     "Bayer Leverkusen",
+  "RasenBallsport Leipzig": "RB Leipzig",
+  "Borussia Dortmund":    "Borussia Dortmund",
+  "Atletico Madrid":      "Atletico Madrid",
+  "Paris Saint-Germain":  "Paris Saint-Germain",
+  "Marseille":            "Marseille",
+  "Lyon":                 "Lyon",
+  "Monaco":               "Monaco",
+  "Athletic Club":        "Athletic Bilbao",
+  "Inter":                "Inter Milan",
+  "Roma":                 "Roma",
+  "Hellas Verona":        "Hellas Verona",
+  "Parma":                "Parma",
+  "Reims":                "Reims",
+  "Montpellier":          "Montpellier",
+  "Auxerre":              "Auxerre",
+  "Strasbourg":           "Strasbourg",
+  "Nantes":               "Nantes",
+  "Lens":                 "Lens",
+  "Rennes":               "Rennes",
+  "Stuttgart":            "Stuttgart",
+  "Mainz":                "Mainz",
+  "Freiburg":             "Freiburg",
+  "Augsburg":             "Augsburg",
+  "Hoffenheim":           "Hoffenheim",
+  "Bochum":               "Bochum",
+  "Heidenheim":           "Heidenheim",
+  "Union Berlin":         "Union Berlin",
+  "Wolfsburg":            "Wolfsburg",
+  "Eintracht Frankfurt":  "Eintracht Frankfurt",
+  "Borussia M.Gladbach":  "Borussia Mönchengladbach",
+};
+
+function normalizeUnderstat(name) {
+  return UNDERSTAT_NAME_MAP[name] || name;
+}
+
+async function fetchUnderstatXG(league) {
+  const uKey = UNDERSTAT_LEAGUE_MAP[league];
+  if (!uKey) return {};
+  // Derive current season start year: if month >= July use this year, else previous year
+  const now = new Date();
+  const year = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  try {
+    const r = await fetch(`https://understat.com/league/${uKey}/${year}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return {};
+    const html = await r.text();
+
+    // Understat embeds: var teamsData = JSON.parse('...')
+    const m = html.match(/var\s+teamsData\s*=\s*JSON\.parse\('(.+?)'\)/s);
+    if (!m) return {};
+
+    // Decode the escaped string (Understat uses \xHH hex escapes + standard JSON escapes)
+    const raw = m[1]
+      .replace(/\\x([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
+
+    const teamsData = JSON.parse(raw);
+    const xgMap = {};
+
+    for (const team of Object.values(teamsData)) {
+      const name = normalizeUnderstat(team.title);
+      const history = Array.isArray(team.history) ? team.history : Object.values(team.history || {});
+      if (!history.length) continue;
+      let xgSum = 0, xgaSum = 0;
+      for (const g of history) {
+        xgSum  += parseFloat(g.xG  || 0);
+        xgaSum += parseFloat(g.xGA || 0);
+      }
+      xgMap[name] = {
+        xg:  parseFloat((xgSum  / history.length).toFixed(2)),
+        xga: parseFloat((xgaSum / history.length).toFixed(2)),
+      };
+    }
+    return xgMap;
+  } catch {
+    return {};
+  }
+}
 
 const LEAGUE_CODE_MAP = {
   EPL:          'PL',
@@ -88,16 +196,17 @@ export default async function handler(req, res) {
   if (!code) return res.status(400).json({ error: "Unknown league." });
 
   try {
-    // Fetch standings + recent matches in parallel for form calculation
+    // Fetch standings + recent matches + Understat xG in parallel
     // 60 days to get enough home/away form data
     const dateFrom = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const dateTo   = new Date().toISOString().split('T')[0];
 
-    const [standingsRes, matchesRes] = await Promise.all([
+    const [standingsRes, matchesRes, xgMap] = await Promise.all([
       fetch(`https://api.football-data.org/v4/competitions/${code}/standings`,
         { headers: { "X-Auth-Token": apiKey } }),
       fetch(`https://api.football-data.org/v4/competitions/${code}/matches?status=FINISHED&dateFrom=${dateFrom}&dateTo=${dateTo}`,
         { headers: { "X-Auth-Token": apiKey } }),
+      fetchUnderstatXG(league),
     ]);
 
     if (!standingsRes.ok) return res.status(200).json({ standings: [], season: null });
@@ -149,6 +258,7 @@ export default async function handler(req, res) {
       const teamId = row.team?.id;
       const hr = homeMap[teamId];
       const ar = awayMap[teamId];
+      const xg = xgMap[teamName] || null;  // { xg, xga } per game averages or null
       return {
         position: row.position,
         team: teamName,
@@ -164,6 +274,9 @@ export default async function handler(req, res) {
         form: recentForm.join(","),
         homeForm: (homeFormMap[teamName] || []).slice(-5).join(","),
         awayForm: (awayFormMap[teamName] || []).slice(-5).join(","),
+        // Understat xG per game (null if league not on Understat)
+        xgPerGame:  xg ? xg.xg  : null,
+        xgaPerGame: xg ? xg.xga : null,
         // Home/Away splits
         homePlayed: hr?.playedGames ?? null,
         homeWon:    hr?.won         ?? null,

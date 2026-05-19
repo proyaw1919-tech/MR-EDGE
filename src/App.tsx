@@ -619,7 +619,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v3"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v4"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -684,9 +684,14 @@ export default function BM8Predictor() {
   const buildTeamStatsLine = (row: any, name: string, isHome: boolean) => {
     if (!row) return `${name}: No standings data available`;
     const formStr = row.form ? row.form.split(",").slice(-5).join("-") : "N/A";
-    // Attack/defense strength (pseudo-xG) — overall season average
-    const atkPPG = row.played > 0 ? (row.gf / row.played).toFixed(2) : "N/A";
-    const defPPG = row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A";
+    // Use real Understat xG if available, otherwise fall back to goals/game
+    const hasXG = row.xgPerGame != null && row.xgaPerGame != null;
+    const atkLabel = hasXG
+      ? `xG ${row.xgPerGame}/g (actual ${row.played > 0 ? (row.gf / row.played).toFixed(2) : "N/A"} scored/g)`
+      : `${row.played > 0 ? (row.gf / row.played).toFixed(2) : "N/A"} scored/g`;
+    const defLabel = hasXG
+      ? `xGA ${row.xgaPerGame}/g (actual ${row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A"} conceded/g)`
+      : `${row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A"} conceded/g`;
     let splitStr = "";
     let venueFormStr = "";
     if (isHome && row.homePlayed != null && row.homePlayed > 0) {
@@ -700,7 +705,7 @@ export default function BM8Predictor() {
       splitStr = ` | AWAY: ${row.awayWon}W-${row.awayDraw}D-${row.awayLost}L — scores ${awayAtk} goals/game, concedes ${awayDef}/game`;
       if (row.awayForm) venueFormStr = ` | Away form (oldest→newest): ${row.awayForm.split(",").join("-")}`;
     }
-    return `${name}: #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | Season avg: ${atkPPG} scored/g, ${defPPG} conceded/g | Last 5: ${formStr}${splitStr}${venueFormStr}`;
+    return `${name}: #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | Season avg: ${atkLabel}, ${defLabel} | Last 5: ${formStr}${splitStr}${venueFormStr}`;
   };
 
   const calcDaysRest = (teamName: string, matchRawDate: string, allMatches: any[]): number | null => {
@@ -1096,7 +1101,8 @@ Rules:
   * Most football matches (70%+) end with 2 or fewer total goals — DO NOT over-predict goals
   * Even heavy favourites at home rarely win by more than 2 goals: prefer 1-0 or 2-0 over 3-0
   * If the away team has a solid defensive record (conceding < 1.2 goals/game) or is defensive by style, cap away goals conceded at 1
-  * Use estGoals (xG-based) as your anchor: if xG suggests ~1.5 total goals, predict 1-0 or 1-1, NOT 3-0
+  * The standings data above includes REAL Understat xG (expected goals) per game where available — use these as your primary attack/defence strength anchor
+  * Use xG per game as your anchor: if home xG is 1.4 and away xGA is 1.0, expect home to score ~1 goal; if xG suggests ~1.5 total goals, predict 1-0 or 1-1, NOT 3-0
   * Never predict a scoreline where total goals > 4 unless xG data or H2H history strongly supports it
   * Typical EPL scorelines by match type — Defensive/Cagey: 1-0, 0-0; Balanced: 1-0, 1-1, 2-1; Open/End-to-end: 2-1, 2-2; High-scoring: 3-1, 3-2
 - winProbability values must sum to 100
