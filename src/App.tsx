@@ -509,6 +509,13 @@ export default function BM8Predictor() {
   const [statusError, setStatusError] = useState(false);
   const [predictingId, setPredictingId] = useState(null);
   const [liveScores, setLiveScores] = useState<Map<string, any>>(new Map());
+  const [betSlip, setBetSlip] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mr-edge-betslip") || "[]"); } catch { return []; }
+  });
+  const [betSlipOpen, setBetSlipOpen] = useState(false);
+  const [predHistory, setPredHistory] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mr-edge-predictions") || "[]"); } catch { return []; }
+  });
 
   useEffect(() => {
     const fetchLive = async () => {
@@ -711,6 +718,51 @@ export default function BM8Predictor() {
     if (!prev.length) return null;
     const days = Math.floor((matchDate.getTime() - new Date(prev[0].rawDate).getTime()) / 86400000);
     return days;
+  };
+
+  const addToBetSlip = (item: any) => {
+    const newSlip = [...betSlip.filter((b: any) => !(b.home === item.home && b.away === item.away && b.pick === item.pick)), { ...item, slipId: Date.now() }];
+    setBetSlip(newSlip);
+    localStorage.setItem("mr-edge-betslip", JSON.stringify(newSlip));
+  };
+  const removeFromSlip = (slipId: number) => {
+    const newSlip = betSlip.filter((b: any) => b.slipId !== slipId);
+    setBetSlip(newSlip);
+    localStorage.setItem("mr-edge-betslip", JSON.stringify(newSlip));
+  };
+  const clearSlip = () => { setBetSlip([]); localStorage.removeItem("mr-edge-betslip"); };
+  const savePredHistory = (match: any, result: any) => {
+    const prob = result.winProbability || {};
+    const predictedWinner = prob.home > prob.away && prob.home > prob.draw ? "home"
+      : prob.away > prob.draw ? "away" : "draw";
+    const record = {
+      id: `${match.home}-${match.away}-${match.rawDate || match.date}`,
+      home: match.home, away: match.away, league: match.league,
+      date: match.date, rawDate: match.rawDate,
+      predictedScore: result.predictedScore,
+      predictedWinner, winProbability: prob,
+      savedAt: new Date().toISOString(),
+    };
+    const newHistory = [...predHistory.filter((p: any) => p.id !== record.id), record].slice(-200);
+    setPredHistory(newHistory);
+    localStorage.setItem("mr-edge-predictions", JSON.stringify(newHistory));
+  };
+  const getAccuracyStats = () => {
+    const completed = matches.filter((m: any) => m.status === "recent");
+    let correct = 0, scoreCorrect = 0, total = 0;
+    for (const pred of predHistory) {
+      const actual = completed.find((m: any) =>
+        m.home.toLowerCase() === pred.home.toLowerCase() &&
+        m.away.toLowerCase() === pred.away.toLowerCase()
+      );
+      if (!actual || actual.homeScore === undefined) continue;
+      total++;
+      const actualWinner = actual.homeScore > actual.awayScore ? "home"
+        : actual.awayScore > actual.homeScore ? "away" : "draw";
+      if (actualWinner === pred.predictedWinner) correct++;
+      if (pred.predictedScore && actual.homeScore === pred.predictedScore.home && actual.awayScore === pred.predictedScore.away) scoreCorrect++;
+    }
+    return { correct, scoreCorrect, total, pct: total > 0 ? Math.round((correct / total) * 100) : null };
   };
 
   // ====================== TOP SCORERS CACHE ======================
@@ -1029,9 +1081,11 @@ Respond ONLY with valid JSON in this EXACT structure:
   "riskLevel": "Low|Medium|High",
   "matchOdds": {"home": "<decimal odds e.g. 2.45>", "draw": "<e.g. 3.20>", "away": "<e.g. 2.85>"},
   "estGoals": "<total expected goals e.g. 2.5>",
-  "bttsChance": "Low|Medium|High",
+  "bttsChance": <int 0-100>,
   "matchType": "<one phrase: e.g. High-scoring | Tactical | Open | Defensive | Cagey | End-to-end>",
   "overUnder25": {"over": "<odds e.g. 2.10>", "under": "<odds e.g. 1.75>"},
+  "htPrediction": {"home": <int>, "away": <int>},
+  "scorelineProbabilities": [{"score": "1-0", "prob": <int>}, {"score": "0-0", "prob": <int>}, {"score": "2-1", "prob": <int>}],
   "homeForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "awayForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "keyFactors": [{"label": "<short>", "favors": "home|away|neutral", "detail": "<one sentence>"}],
@@ -1063,7 +1117,10 @@ Rules:
 - 3-5 keyFactors — reference real standings data in at least one factor, H2H history in at least one factor if available, top scorers in at least one factor if data provided
 - playerWatch: 2-4 players who will be decisive in this match — prioritise the top scorers listed above (one or two from each side)
 - injuries: list known or likely injuries/suspensions based on your knowledge; empty array [] if none known
-- RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English, bttsChance as Low/Medium/High in English.`;
+- bttsChance: integer 0-100 representing % probability both teams score
+- htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
+- scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
+- RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
       // Try Claude (Opus 4.7) first, fall back to Gemini
       const callAI = async (endpoint: string, body: object, timeoutMs = 55000) => {
         const controller = new AbortController();
@@ -1094,6 +1151,7 @@ Rules:
       const usedModel = data.model || usedEndpoint;
       const result = parseFlexibleJSON(text);
       writeCache(match, lang, result);
+      if (!isRecent) savePredHistory(match, result);
       setResult(match.id, { match, result, isRecent, loading: false, fromCache: false, usedModel, lang, teamStats: capturedTeamStats, oddsFound: capturedOddsFound });
     } catch (e: any) {
       let errMsg = e.message || String(e);
@@ -1406,6 +1464,7 @@ Rules:
                           isExpanded={expandedIds.has(match.id)}
                           onToggle={() => toggleExpanded(match.id)}
                           liveScores={liveScores}
+                          onAddToSlip={addToBetSlip}
                         />
                       ))}
                     </div>
@@ -1432,7 +1491,7 @@ Rules:
 
         {/* ========== INSIGHTS TAB ========== */}
         {activeNav === "insights" && (
-          <InsightsView matches={matches} t={t} lang={lang} />
+          <InsightsView matches={matches} t={t} lang={lang} getAccuracyStats={getAccuracyStats} />
         )}
 
         {/* ========== STANDINGS TAB ========== */}
@@ -1455,6 +1514,44 @@ Rules:
         <span>{t.footer2}</span><span style={styles.footerDot}>●</span>
         <span>{t.footer3}</span>
       </footer>
+
+      {/* Bet Slip */}
+      {betSlip.length > 0 && (
+        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 1000 }}>
+          {betSlipOpen && (
+            <div style={{ position: "absolute", bottom: "calc(100% + 12px)", right: 0, width: 300, background: "#13131a", border: "1px solid rgba(240,180,41,0.3)", borderRadius: 12, boxShadow: "0 8px 40px rgba(0,0,0,0.6)", overflow: "hidden" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(240,180,41,0.06)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#F0B429" }}>BET SLIP ({betSlip.length})</span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={clearSlip} style={{ fontSize: 10, color: "#666", background: "none", border: "none", cursor: "pointer" }}>CLEAR ALL</button>
+                  <button onClick={() => setBetSlipOpen(false)} style={{ color: "#888", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}>×</button>
+                </div>
+              </div>
+              <div style={{ maxHeight: 320, overflowY: "auto", padding: "8px" }}>
+                {betSlip.map((b: any) => (
+                  <div key={b.slipId} style={{ padding: "10px 12px", background: "#1a1a24", borderRadius: 8, marginBottom: 6, position: "relative" }}>
+                    <button onClick={() => removeFromSlip(b.slipId)} style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 14 }}>×</button>
+                    <div style={{ fontSize: 11, color: "#888", marginBottom: 2 }}>{b.league} · {b.date}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#ccc", marginBottom: 4 }}>{b.home} vs {b.away}</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#F0B429" }}>→ {b.pick}</span>
+                      {b.odds > 0 && <span style={{ fontSize: 12, color: "#888" }}>@ {b.odds.toFixed(2)}</span>}
+                    </div>
+                    {b.confidence && <div style={{ fontSize: 10, color: "#555", marginTop: 3 }}>AI Confidence: {b.confidence}%</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => setBetSlipOpen(!betSlipOpen)}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", borderRadius: 50, color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 20px rgba(240,180,41,0.5)", letterSpacing: "0.05em" }}
+          >
+            📋 <span>SLIP</span>
+            <span style={{ background: "#000", color: "#F0B429", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>{betSlip.length}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1957,7 +2054,7 @@ function ResultsView({ matches, onPredictMatch, predictingId, t, expandedResults
 }
 
 // ============================== INSIGHTS VIEW ================================
-function InsightsView({ matches, t, lang }) {
+function InsightsView({ matches, t, lang, getAccuracyStats }) {
   const [question, setQuestion] = useState("");
   const [aiAnswer, setAiAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -2023,6 +2120,30 @@ Provide a clear, informative answer in 2-4 paragraphs. Use bullet points or shor
         <StatCard label={t.statsRecent} value={recent.length} color="#8a8a8a" />
         <StatCard label={t.statsSample} value={matches.length} color="#fff" />
       </div>
+
+      {(() => {
+        const acc = getAccuracyStats();
+        if (!acc.total) return null;
+        return (
+          <div style={{ padding: "14px 16px", background: "rgba(240,180,41,0.05)", border: "1px solid rgba(240,180,41,0.15)", borderRadius: 10, marginTop: 4, marginBottom: 28 }}>
+            <div style={{ fontSize: 9, color: "#F0B429", letterSpacing: "0.2em", fontWeight: 700, marginBottom: 6 }}>MY PREDICTION ACCURACY</div>
+            <div style={{ display: "flex", gap: 20, alignItems: "flex-end" }}>
+              <div>
+                <div style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, color: "#F0B429", lineHeight: 1 }}>{acc.pct}%</div>
+                <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Win/Draw/Loss</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#888", lineHeight: 1 }}>{acc.correct}/{acc.total}</div>
+                <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Correct outcomes</div>
+              </div>
+              {acc.scoreCorrect > 0 && <div>
+                <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 700, color: "#555", lineHeight: 1 }}>{acc.scoreCorrect}</div>
+                <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Exact scores</div>
+              </div>}
+            </div>
+          </div>
+        );
+      })()}
 
       <div style={{ marginBottom: 32 }}>
         <div style={styles.sectionTitle}>{t.leagueBreakdown}</div>
@@ -2347,7 +2468,7 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, onToggle, liveScores }) {
+function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, onToggle, liveScores, onAddToSlip }) {
   const isRecent = match.status === "recent";
   const liveData = liveScores?.get(`${match.home}|${match.away}`);
   return (
@@ -2447,21 +2568,21 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
             )}
           </div>
           {expandedData.result && isRecent && <RecentAnalysis match={match} result={expandedData.result} t={t} />}
-          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} />}
+          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} onAddToSlip={onAddToSlip} />}
         </div>
       )}
     </div>
   );
 }
 
-function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound }: any) {
+function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound, onAddToSlip }: any) {
   const {
     predictedScore, winProbability,
     confidence, confidencePercent, riskLevel,
     matchOdds, estGoals, bttsChance, matchType, overUnder25,
     homeForm, awayForm,
     keyFactors, reasoning, watchOut,
-    playerWatch, injuries
+    playerWatch, injuries, htPrediction, scorelineProbabilities
   } = result;
 
   const confPct = typeof confidencePercent === "number" ? confidencePercent
@@ -2524,6 +2645,13 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
         {reasoning}
       </div>
 
+      {htPrediction && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#111117", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 12 }}>
+          <span style={{ fontSize: 10, color: "#666", letterSpacing: "0.12em", fontWeight: 700 }}>HT PREDICTION</span>
+          <span style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 800, color: "#F0B429" }}>{htPrediction.home} — {htPrediction.away}</span>
+        </div>
+      )}
+
       {matchOdds && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 10 }}>
           <OddsCell label={t.homeWin || "Home"} odd={matchOdds.home} />
@@ -2576,7 +2704,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
       {(estGoals || bttsChance || matchType) && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
           {estGoals && <MiniStatCard icon="⚡" label={t.estGoals || "Est. Goals"} value={estGoals} />}
-          {bttsChance && <MiniStatCard icon="🎯" label="BTTS" value={bttsChance} />}
+          {bttsChance !== undefined && bttsChance !== null && <MiniStatCard icon="🎯" label="BTTS" value={typeof bttsChance === "number" ? `${bttsChance}%` : bttsChance} />}
           {matchType && <MiniStatCard icon="🔥" label={t.matchType || "Match Type"} value={matchType} />}
         </div>
       )}
@@ -2594,6 +2722,21 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
               <div style={{ fontSize: 22, fontWeight: 700, color: "#60a5fa", fontFamily: "inherit" }}>{overUnder25.under}</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {scorelineProbabilities && scorelineProbabilities.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={styles.sectionTitle}>🎯 TOP SCORELINES</div>
+          {scorelineProbabilities.slice(0, 3).map((s: any, i: number) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <span style={{ fontFamily: "inherit", fontSize: 15, fontWeight: 700, color: "#fff", minWidth: 36 }}>{s.score}</span>
+              <div style={{ flex: 1, background: "#1a1a22", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${Math.min(s.prob * 2.5, 100)}%`, background: i === 0 ? "#F0B429" : i === 1 ? "#888" : "#555", borderRadius: 4, transition: "width 0.6s ease" }} />
+              </div>
+              <span style={{ fontSize: 12, color: "#F0B429", fontWeight: 700, minWidth: 36, textAlign: "right" }}>{s.prob}%</span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -2692,6 +2835,22 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
           </div>
           <div style={styles.watchOutBox}>{watchOut}</div>
         </div>
+      )}
+
+      {onAddToSlip && (
+        <button
+          onClick={() => onAddToSlip({
+            home: match.home, away: match.away, league: match.league, date: match.date,
+            pick: prob.home > prob.away && prob.home > prob.draw ? match.home
+              : prob.away > prob.draw ? match.away : (t.drawCap || "Draw"),
+            odds: prob.home > prob.away && prob.home > prob.draw ? parseFloat(matchOdds?.home || 0)
+              : prob.away > prob.draw ? parseFloat(matchOdds?.away || 0) : parseFloat(matchOdds?.draw || 0),
+            confidence: confPct,
+          })}
+          style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg, #C9A84C, #F0B429)", border: "none", borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer", letterSpacing: "0.05em", marginTop: 4 }}
+        >
+          + ADD TO BET SLIP
+        </button>
       )}
     </>
   );
