@@ -253,7 +253,7 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: "Server configuration error." });
 
   const today = new Date();
-  const from  = new Date(today); from.setDate(from.getDate() - 7);
+  const from  = new Date(today); from.setDate(from.getDate() - 3);
   const to    = new Date(today); to.setDate(to.getDate() + 6);
   const dateFrom = from.toISOString().split('T')[0];
   const dateTo   = to.toISOString().split('T')[0];
@@ -306,7 +306,7 @@ export default async function handler(req, res) {
 
     res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
     return res.json({ matches });
-  } catch {
-    return res.status(500).json({ error: "Failed to fetch fixtures." });
+  } catch (e) {
+    return res.status(500).json({ error: "Failed to fetch fixtures.", detail: e?.message || "unknown" });
   }
 }
