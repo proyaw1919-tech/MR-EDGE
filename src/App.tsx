@@ -1407,31 +1407,6 @@ Rules:
         {/* ========== FIXTURES TAB ========== */}
         {activeNav === "fixtures" && (
           <>
-            {/* Search + Refresh */}
-            <div className="bm8-search-row" style={styles.searchRow}>
-              <div style={styles.searchWrap}>
-                <Search size={16} style={styles.searchIcon} />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t.searchPlaceholder}
-                  style={styles.searchInput}
-                />
-                {search && (
-                  <button onClick={() => setSearch("")} style={styles.searchClear}>
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-              <button onClick={refresh} disabled={refreshing} className="refresh-btn bm8-refresh-btn" style={styles.refreshBtn}>
-                {refreshing
-                  ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
-                  : <RefreshCw size={16} />}
-                <span>{refreshing ? t.refreshing : t.refresh}</span>
-              </button>
-            </div>
-
             {/* Filter tabs */}
             <div className="bm8-filter-tabs" style={styles.filterTabs}>
               {[
@@ -1479,6 +1454,31 @@ Rules:
                   style={{ ...styles.filterSelect, colorScheme: "dark", cursor: "pointer" }}
                 />
               </div>
+            </div>
+
+            {/* Search + Refresh */}
+            <div className="bm8-search-row" style={styles.searchRow}>
+              <div style={styles.searchWrap}>
+                <Search size={16} style={styles.searchIcon} />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t.searchPlaceholder}
+                  style={styles.searchInput}
+                />
+                {search && (
+                  <button onClick={() => setSearch("")} style={styles.searchClear}>
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <button onClick={refresh} disabled={refreshing} className="refresh-btn bm8-refresh-btn" style={styles.refreshBtn}>
+                {refreshing
+                  ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+                  : <RefreshCw size={16} />}
+                <span>{refreshing ? t.refreshing : t.refresh}</span>
+              </button>
             </div>
 
             <div className="bm8-status-bar" style={{ ...styles.statusBar, color: statusError ? "#ff6b6b" : "#8a8a8a", ...(refreshing ? { animation: "pulse 1.4s ease-in-out infinite" } : {}) }}>
