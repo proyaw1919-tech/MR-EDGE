@@ -1192,6 +1192,16 @@ Rules:
     } finally { setPredictingId(null); }
   };
 
+  const upcomingCount = matches.filter((m: any) => m.status === "upcoming").length;
+  const recentCount = matches.filter((m: any) => m.status === "recent").length;
+  const trackedLeagueCount = [...new Set(matches.map((m: any) => m.league))].length;
+  const predictedCount = predHistory.length;
+  const activeModeLabel = activeNav === "fixtures" ? t.nav.fixtures
+    : activeNav === "results" ? t.nav.results
+    : activeNav === "insights" ? t.nav.insights
+    : activeNav === "standings" ? t.nav.standings
+    : t.nav.parlay;
+
   return (
     <div style={styles.app}>
       <style>{globalCSS}</style>
@@ -1347,6 +1357,37 @@ Rules:
              t.heroSub}
           </p>
         </div>
+      </section>
+
+      <section className="edge-command-deck" aria-label="MR.EDGE command overview">
+        {[
+          {
+            label: lang === "zh" ? "即将开赛" : lang === "ms" ? "Akan Datang" : "Upcoming",
+            value: upcomingCount,
+            meta: lang === "zh" ? "实时赛程扫描" : lang === "ms" ? "Imbasan jadual langsung" : "Live fixture scan",
+          },
+          {
+            label: lang === "zh" ? "近期结果" : lang === "ms" ? "Keputusan" : "Results",
+            value: recentCount,
+            meta: lang === "zh" ? "可回看分析" : lang === "ms" ? "Analisis semula" : "Review-ready analysis",
+          },
+          {
+            label: lang === "zh" ? "追踪联赛" : lang === "ms" ? "Liga Dijejak" : "Leagues",
+            value: trackedLeagueCount,
+            meta: lang === "zh" ? "跨联赛数据" : lang === "ms" ? "Data merentas liga" : "Cross-league data",
+          },
+          {
+            label: lang === "zh" ? "预测记录" : lang === "ms" ? "Rekod Ramalan" : "Prediction Log",
+            value: predictedCount,
+            meta: activeModeLabel,
+          },
+        ].map((item) => (
+          <div key={item.label} className="edge-command-card">
+            <div className="edge-command-label">{item.label}</div>
+            <div className="edge-command-value">{item.value}</div>
+            <div className="edge-command-meta">{item.meta}</div>
+          </div>
+        ))}
       </section>
 
       {/* LEAGUE DROPDOWN BUTTON */}

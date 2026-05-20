@@ -79,6 +79,54 @@ header {
   color: #b8c7d9 !important;
 }
 
+.edge-command-deck {
+  width: min(1400px, calc(100% - 48px));
+  margin: -42px auto 24px;
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.edge-command-card {
+  min-height: 116px;
+  padding: 16px 18px;
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(7, 17, 31, 0.78)),
+    radial-gradient(circle at top right, rgba(0, 229, 255, 0.14), transparent 45%);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.edge-command-label {
+  color: #8aa0b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.edge-command-value {
+  margin-top: 14px;
+  color: #f8fafc;
+  font-size: 34px;
+  font-weight: 850;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.edge-command-meta {
+  margin-top: 10px;
+  color: #00e5ff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .bm8-filter-tabs {
   background: rgba(7, 17, 31, 0.58) !important;
   border-color: rgba(0, 229, 255, 0.1) !important;
@@ -162,5 +210,32 @@ header {
   .bm8-hero {
     min-height: 240px !important;
     padding: 34px 16px 28px !important;
+  }
+
+  .edge-command-deck {
+    width: calc(100% - 24px);
+    margin: -20px auto 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .edge-command-card {
+    min-height: 94px;
+    padding: 12px 12px;
+  }
+
+  .edge-command-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  .edge-command-value {
+    margin-top: 10px;
+    font-size: 26px;
+  }
+
+  .edge-command-meta {
+    margin-top: 7px;
+    font-size: 10px;
   }
 }
