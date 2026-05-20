@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v4"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v5"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -1098,6 +1098,15 @@ Respond ONLY with valid JSON in this EXACT structure:
 }
 
 Rules:
+- CRITICAL — predictedScore MUST match winProbability outcome:
+  * If home win probability is highest → predictedScore.home MUST be > predictedScore.away
+  * If away win probability is highest → predictedScore.away MUST be > predictedScore.home
+  * If draw probability is highest → predictedScore.home MUST equal predictedScore.away
+  * NEVER predict a draw score (e.g. 1-1) while also giving one team a higher win probability — this is a logical contradiction
+- CRITICAL — ignore historical reputation; judge ONLY on the real data provided above:
+  * Historically great teams (Man City, Real Madrid, Bayern, PSG etc.) must be evaluated on their CURRENT season stats and position, not past achievements
+  * If a top club is mid-table or below, treat them as a mid-table team — do NOT assume they are elite
+  * Use the actual standing position, form, xG, and home/away record given above as your ONLY source of truth for team strength
 - predictedScore MUST be realistic and conservative:
   * Most football matches (70%+) end with 2 or fewer total goals — DO NOT over-predict goals
   * Even heavy favourites at home rarely win by more than 2 goals: prefer 1-0 or 2-0 over 3-0
@@ -1153,6 +1162,23 @@ Rules:
       const text = (data.text || "").replace(/```json|```/g, "").trim();
       const usedModel = data.model || usedEndpoint;
       const result = parseFlexibleJSON(text);
+
+      // ── Consistency fix: reconcile predictedScore with winProbability ──
+      // The AI sometimes predicts a draw score while saying one team wins, or vice versa.
+      // Force the score to match whichever outcome has the highest probability.
+      (() => {
+        const p = result.winProbability || {};
+        const s = result.predictedScore;
+        if (!s || typeof s.home !== "number" || typeof s.away !== "number") return;
+        const topOutcome = p.home > p.away && p.home > p.draw ? "home"
+          : p.away > p.draw ? "away" : "draw";
+        const scoreOutcome = s.home > s.away ? "home" : s.away > s.home ? "away" : "draw";
+        if (topOutcome === scoreOutcome) return; // already consistent
+        if (topOutcome === "home")  result.predictedScore = { home: s.away + 1, away: s.away };
+        else if (topOutcome === "away") result.predictedScore = { home: s.home, away: s.home + 1 };
+        else result.predictedScore = { home: Math.min(s.home, s.away), away: Math.min(s.home, s.away) };
+      })();
+
       writeCache(match, lang, result);
       if (!isRecent) savePredHistory(match, result);
       setResult(match.id, { match, result, isRecent, loading: false, fromCache: false, usedModel, lang, teamStats: capturedTeamStats, oddsFound: capturedOddsFound });
