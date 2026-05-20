@@ -1,0 +1,166 @@
+html,
+body {
+  background: #030712;
+}
+
+body {
+  color: #e2e8f0;
+}
+
+#root {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(0, 229, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 86% 12%, rgba(47, 125, 255, 0.12), transparent 30%),
+    linear-gradient(180deg, #030712 0%, #08111f 52%, #030712 100%);
+}
+
+.bm8-nav-inner {
+  position: relative;
+}
+
+header {
+  background: rgba(3, 7, 18, 0.88) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24) !important;
+}
+
+.desktop-nav button {
+  border: 1px solid transparent !important;
+  color: #8aa0b8 !important;
+  font-weight: 700 !important;
+}
+
+.desktop-nav button[style*="gradient"] {
+  background: linear-gradient(135deg, #00e5ff, #2f7dff) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #021018 !important;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.34) !important;
+}
+
+.bm8-hero {
+  margin-bottom: 22px !important;
+  min-height: 340px;
+  padding: 64px 24px 54px !important;
+  border-left: 1px solid rgba(0, 229, 255, 0.08);
+  border-right: 1px solid rgba(0, 229, 255, 0.08);
+}
+
+.bm8-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 34%, rgba(0, 229, 255, 0.18), transparent 32%),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+}
+
+.bm8-hero-bg {
+  filter: saturate(0.82) contrast(1.08);
+  transform: scale(1.04) !important;
+}
+
+.bm8-hero-label,
+.bm8-date-header {
+  color: #00e5ff !important;
+}
+
+.bm8-hero-title span {
+  background: linear-gradient(90deg, #00e5ff, #77f7ff) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.bm8-hero-sub {
+  color: #b8c7d9 !important;
+}
+
+.bm8-filter-tabs {
+  background: rgba(7, 17, 31, 0.58) !important;
+  border-color: rgba(0, 229, 255, 0.1) !important;
+}
+
+.bm8-filter-tab {
+  background: transparent !important;
+  color: #6f839b !important;
+  font-weight: 700 !important;
+}
+
+.bm8-filter-tab[style*="0, 229, 255"],
+.bm8-filter-tab[style*="0,229,255"] {
+  color: #00e5ff !important;
+  font-weight: 800 !important;
+}
+
+.bm8-search-row input {
+  background: rgba(7, 17, 31, 0.78) !important;
+  border-color: rgba(0, 229, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.bm8-search-row input:focus {
+  border-color: rgba(0, 229, 255, 0.55) !important;
+}
+
+.bm8-refresh-btn,
+.bm8-predict-btn {
+  border-color: rgba(0, 229, 255, 0.44) !important;
+}
+
+.bm8-predict-btn {
+  background: linear-gradient(135deg, #00e5ff, #2f7dff) !important;
+  color: #021018 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 14px rgba(0, 229, 255, 0.26) !important;
+}
+
+.bm8-refresh-btn {
+  color: #00e5ff !important;
+}
+
+.bm8-refresh-btn:hover:not(:disabled) {
+  background: #00e5ff !important;
+  color: #021018 !important;
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.36) !important;
+}
+
+.bm8-status-bar {
+  border-bottom-color: rgba(0, 229, 255, 0.08) !important;
+  color: #b8c7d9 !important;
+}
+
+.match-row {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(7, 17, 31, 0.72)) !important;
+  border-color: rgba(0, 229, 255, 0.09) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+.match-row:hover {
+  background: rgba(0, 229, 255, 0.035) !important;
+  border-color: rgba(0, 229, 255, 0.38) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28), 0 0 28px rgba(0, 229, 255, 0.08) !important;
+}
+
+.bm8-league-tag {
+  background: rgba(0, 229, 255, 0.06) !important;
+  border-color: rgba(0, 229, 255, 0.18) !important;
+  color: #7dd3fc !important;
+  font-weight: 800 !important;
+}
+
+.bm8-footer {
+  border-top-color: rgba(0, 229, 255, 0.08) !important;
+  color: #41536a !important;
+}
+
+@media (max-width: 768px) {
+  .bm8-hero {
+    min-height: 240px !important;
+    padding: 34px 16px 28px !important;
+  }
+}
