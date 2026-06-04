@@ -39,6 +39,18 @@ const FOOTBALL_IMG = "/football.jpg";
 // API key is safely stored on the backend (see api/gemini.js)
 // Frontend calls our own /api/gemini endpoint instead
 
+// TODO: Weekly Promo / Bonus schedule — surface in chat popover (chatBetBtn flow)
+//   Day    | Promo            | Target audience
+//   -------|------------------|------------------
+//   Mon    | Rescue Bonus     | 新/旧会员 (new + existing)
+//   Tue    | Welcome 100%     | 新会员 (new)
+//   Wed    | VIP 晋级彩金     | 旧会员 (existing)
+//   Thurs  | 反水 1.8%        | 新/旧会员 (new + existing)
+//   Fri    | 生日彩金         | 旧会员 (existing)
+//   Sat    | Welcome 300%     | 新会员 (new)
+//   Sun    | RM18 免费彩金    | 新会员 (new)
+//   Needs: i18n strings (en/zh/ms), day-of-week gating, "Bet Now" CTA wiring.
+
 // ---- Translations ----
 const T = {
   en: {
