@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v5"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v6"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -990,13 +990,47 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
             if (pred.homeGoalsFor) lines.push(`${match.home} avg goals: ${pred.homeGoalsFor} scored / ${pred.homeGoalsAgainst} conceded per game`);
             if (pred.awayGoalsFor) lines.push(`${match.away} avg goals: ${pred.awayGoalsFor} scored / ${pred.awayGoalsAgainst} conceded per game`);
           }
+          // Full-season team statistics (clean sheets, failed to score, formations)
+          const tss = apiFootball.teamSeasonStats;
+          const fmtSeason = (s: any, name: string) => {
+            if (!s) return null;
+            const parts: string[] = [];
+            if (s.cleanSheets != null) parts.push(`${s.cleanSheets} clean sheets`);
+            if (s.failedToScore != null) parts.push(`failed to score in ${s.failedToScore} games`);
+            if (s.avgGoalsFor) parts.push(`${s.avgGoalsFor} scored/g`);
+            if (s.avgGoalsAgainst) parts.push(`${s.avgGoalsAgainst} conceded/g`);
+            if (s.formation) parts.push(`usual formation ${s.formation}`);
+            if (s.winStreak) parts.push(`best win streak ${s.winStreak}`);
+            return parts.length ? `${name} season stats: ${parts.join(", ")}` : null;
+          };
+          const hLine = fmtSeason(tss?.home, match.home);
+          const aLine = fmtSeason(tss?.away, match.away);
+          if (hLine) lines.push(hLine);
+          if (aLine) lines.push(aLine);
           if (lines.length) {
             injuriesBlock = `\nINJURIES & TEAM FORM (API-Football real data):\n${lines.join("\n")}\n`;
           }
         }
 
-        // Build lineup block
-        const lu = lineupsData?.lineup;
+        // Confirmed lineups from API-Football (published ~20-40 min before kickoff)
+        const afLineups = apiFootball?.lineups;
+        if (afLineups && (afLineups.home || afLineups.away)) {
+          const lines: string[] = [];
+          const fmtAF = (l: any, name: string) => {
+            if (!l) return;
+            const bits: string[] = [];
+            if (l.formation) bits.push(`formation ${l.formation}`);
+            if (l.coach) bits.push(`coach ${l.coach}`);
+            if (bits.length) lines.push(`${name}: ${bits.join(", ")}`);
+            if (l.startXI?.length) lines.push(`${name} confirmed XI: ${l.startXI.join(", ")}`);
+          };
+          fmtAF(afLineups.home, match.home);
+          fmtAF(afLineups.away, match.away);
+          if (lines.length) lineupBlock = `\nCONFIRMED LINEUPS (API-Football official — key absences or surprise selections heavily impact outcome):\n${lines.join("\n")}\n`;
+        }
+
+        // Build lineup block (football-data.org fallback — only if API-Football lineups missing)
+        const lu = lineupBlock ? null : lineupsData?.lineup;
         if (lu) {
           const fmtPlayers = (players: any[]) => players.map(p => `${p.name} (${p.position})`).join(", ");
           const lines: string[] = [];
