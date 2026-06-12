@@ -104,13 +104,22 @@ export default async function handler(req, res) {
 
     const odds = await Promise.all(data.map(async event => {
       const prices = { home: [], draw: [], away: [] };
+      let pinnacleHome = null, pinnacleDraw = null, pinnacleAway = null;
       for (const bm of (event.bookmakers || [])) {
         const market = bm.markets?.find(m => m.key === 'h2h');
         if (!market) continue;
+        const isPinnacle = bm.key === 'pinnacle';
         for (const outcome of (market.outcomes || [])) {
-          if (outcome.name === event.home_team)       prices.home.push(outcome.price);
-          else if (outcome.name === event.away_team)  prices.away.push(outcome.price);
-          else                                        prices.draw.push(outcome.price);
+          if (outcome.name === event.home_team) {
+            prices.home.push(outcome.price);
+            if (isPinnacle) pinnacleHome = outcome.price;
+          } else if (outcome.name === event.away_team) {
+            prices.away.push(outcome.price);
+            if (isPinnacle) pinnacleAway = outcome.price;
+          } else {
+            prices.draw.push(outcome.price);
+            if (isPinnacle) pinnacleDraw = outcome.price;
+          }
         }
       }
       const avg = arr => arr.length
@@ -157,6 +166,8 @@ export default async function handler(req, res) {
         homeSignal: moveLabel(homeMov),
         drawSignal: moveLabel(drawMov),
         awaySignal: moveLabel(awayMov),
+        // Pinnacle (sharpest bookmaker — closest to true probability)
+        pinnacleHome, pinnacleDraw, pinnacleAway,
       };
     }));
 

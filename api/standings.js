@@ -97,9 +97,18 @@ async function fetchUnderstatXG(league) {
         xgSum  += parseFloat(g.xG  || 0);
         xgaSum += parseFloat(g.xGA || 0);
       }
+      // Recent trend: last 5 matches only
+      const last5 = history.slice(-5);
+      let xg5 = 0, xga5 = 0;
+      for (const g of last5) {
+        xg5  += parseFloat(g.xG  || 0);
+        xga5 += parseFloat(g.xGA || 0);
+      }
       xgMap[name] = {
         xg:  parseFloat((xgSum  / history.length).toFixed(2)),
         xga: parseFloat((xgaSum / history.length).toFixed(2)),
+        xgRecent:  last5.length ? parseFloat((xg5  / last5.length).toFixed(2)) : null,
+        xgaRecent: last5.length ? parseFloat((xga5 / last5.length).toFixed(2)) : null,
       };
     }
     return xgMap;
@@ -277,6 +286,8 @@ export default async function handler(req, res) {
         // Understat xG per game (null if league not on Understat)
         xgPerGame:  xg ? xg.xg  : null,
         xgaPerGame: xg ? xg.xga : null,
+        xgRecent:   xg ? xg.xgRecent  : null,  // last-5 average
+        xgaRecent:  xg ? xg.xgaRecent : null,
         // Home/Away splits
         homePlayed: hr?.playedGames ?? null,
         homeWon:    hr?.won         ?? null,

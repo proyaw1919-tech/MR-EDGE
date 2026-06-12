@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v6"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v7"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -693,6 +693,13 @@ export default function BM8Predictor() {
     const defLabel = hasXG
       ? `xGA ${row.xgaPerGame}/g (actual ${row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A"} conceded/g)`
       : `${row.played > 0 ? (row.ga / row.played).toFixed(2) : "N/A"} conceded/g`;
+    // Recent xG trend vs season average — season averages can hide current form
+    let xgTrendStr = "";
+    if (row.xgRecent != null && row.xgPerGame != null) {
+      const diff = row.xgRecent - row.xgPerGame;
+      const trend = diff >= 0.25 ? "↑ attacking output IMPROVING" : diff <= -0.25 ? "↓ attacking output DECLINING" : "stable";
+      xgTrendStr = ` | xG last 5 games: ${row.xgRecent}/g, xGA ${row.xgaRecent}/g (${trend})`;
+    }
     let splitStr = "";
     let venueFormStr = "";
     if (isHome && row.homePlayed != null && row.homePlayed > 0) {
@@ -706,7 +713,64 @@ export default function BM8Predictor() {
       splitStr = ` | AWAY: ${row.awayWon}W-${row.awayDraw}D-${row.awayLost}L — scores ${awayAtk} goals/game, concedes ${awayDef}/game`;
       if (row.awayForm) venueFormStr = ` | Away form (oldest→newest): ${row.awayForm.split(",").join("-")}`;
     }
-    return `${name}: #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | Season avg: ${atkLabel}, ${defLabel} | Last 5: ${formStr}${splitStr}${venueFormStr}`;
+    return `${name}: #${row.position} | ${row.points}pts | ${row.played}P ${row.won}W-${row.draw}D-${row.lost}L | Season avg: ${atkLabel}, ${defLabel}${xgTrendStr} | Last 5: ${formStr}${splitStr}${venueFormStr}`;
+  };
+
+  // Poisson scoreline model — pure xG mathematics as a probability anchor for the AI
+  const poissonPredict = (homeRow: any, awayRow: any) => {
+    if (!homeRow || !awayRow) return null;
+    // Attack/defence rate: blend season xG (60%) with last-5 xG (40%); fall back to goals/game
+    const rate = (row: any, atk: boolean) => {
+      const season = atk ? row.xgPerGame : row.xgaPerGame;
+      const recent = atk ? row.xgRecent : row.xgaRecent;
+      if (season != null && recent != null) return 0.6 * season + 0.4 * recent;
+      if (season != null) return season;
+      if (!row.played) return null;
+      return atk ? row.gf / row.played : row.ga / row.played;
+    };
+    const hAtk = rate(homeRow, true), hDef = rate(homeRow, false);
+    const aAtk = rate(awayRow, true), aDef = rate(awayRow, false);
+    if (hAtk == null || hDef == null || aAtk == null || aDef == null) return null;
+    const lambdaHome = ((hAtk + aDef) / 2) * 1.1;  // home advantage
+    const lambdaAway = ((aAtk + hDef) / 2) * 0.9;
+    const FACT = [1, 1, 2, 6, 24, 120, 720];
+    const pois = (l: number, k: number) => Math.exp(-l) * Math.pow(l, k) / FACT[k];
+    let pH = 0, pD = 0, pA = 0;
+    const scores: { score: string; prob: number }[] = [];
+    for (let h = 0; h <= 6; h++) for (let a = 0; a <= 6; a++) {
+      const p = pois(lambdaHome, h) * pois(lambdaAway, a);
+      if (h > a) pH += p; else if (h === a) pD += p; else pA += p;
+      scores.push({ score: `${h}-${a}`, prob: p });
+    }
+    const total = pH + pD + pA;
+    scores.sort((x, y) => y.prob - x.prob);
+    return {
+      home: Math.round(pH / total * 100),
+      draw: Math.round(pD / total * 100),
+      away: Math.round(pA / total * 100),
+      expHome: lambdaHome.toFixed(2),
+      expAway: lambdaAway.toFixed(2),
+      topScores: scores.slice(0, 3).map(s => `${s.score} (${Math.round(s.prob / total * 100)}%)`),
+    };
+  };
+
+  // Motivation analysis — what is each team playing for?
+  const motivationFor = (row: any, standings: any[]) => {
+    if (!row || standings.length < 10) return null;
+    const size = standings.length;
+    const totalRounds = (size - 1) * 2;
+    const remaining = Math.max(0, totalRounds - row.played);
+    if (remaining === 0) return "season finished";
+    const leader = standings[0];
+    const gapLeader = leader.points - row.points;
+    const fourth = standings[3], sixth = standings[5];
+    const firstRelegated = standings[size - 3];
+    if (row.position === 1) return `LEADING the title race (${remaining} games left)`;
+    if (gapLeader <= Math.min(6, remaining * 3) && row.position <= 4) return `in the TITLE RACE — ${gapLeader}pts behind leader with ${remaining} games left`;
+    if (fourth && Math.abs(row.points - fourth.points) <= 4 && row.position <= 8) return `fighting for CHAMPIONS LEAGUE qualification (top 4)`;
+    if (sixth && Math.abs(row.points - sixth.points) <= 3 && row.position <= 10) return `fighting for European qualification`;
+    if (firstRelegated && row.points - firstRelegated.points <= 5 && row.position >= size - 6) return `in a RELEGATION BATTLE — only ${row.points - firstRelegated.points}pts above the drop zone with ${remaining} games left`;
+    return `mid-table with little at stake — possible low motivation`;
   };
 
   const calcDaysRest = (teamName: string, matchRawDate: string, allMatches: any[]): number | null => {
@@ -868,6 +932,8 @@ export default function BM8Predictor() {
       let injuriesBlock = "";
       let lineupBlock = "";
       let weatherBlock = "";
+      let poissonBlock = "";
+      let motivationBlock = "";
       let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
       let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
@@ -897,6 +963,30 @@ ${buildTeamStatsLine(awayRow, match.away, false)}
           // Extract real form for homeForm/awayForm arrays
           if (homeRow?.form) homeFormArr = homeRow.form.split(",").slice(-5).map((x: string) => x.trim()).filter(Boolean);
           if (awayRow?.form) awayFormArr = awayRow.form.split(",").slice(-5).map((x: string) => x.trim()).filter(Boolean);
+
+          // Poisson mathematical baseline from xG
+          const poisson = poissonPredict(homeRow, awayRow);
+          if (poisson) {
+            poissonBlock = `
+POISSON MODEL BASELINE (pure xG mathematics — anchor your winProbability and scorelines on this; deviate only with clear justification from injuries, lineups or motivation):
+Expected goals: ${match.home} ${poisson.expHome} — ${match.away} ${poisson.expAway}
+Model probabilities: Home ${poisson.home}% | Draw ${poisson.draw}% | Away ${poisson.away}%
+Most likely scorelines: ${poisson.topScores.join(", ")}
+`;
+          }
+
+          // Motivation & stakes
+          const homeMotiv = motivationFor(homeRow, standings);
+          const awayMotiv = motivationFor(awayRow, standings);
+          if (homeMotiv || awayMotiv) {
+            const mLines: string[] = [];
+            if (homeMotiv) mLines.push(`${match.home}: ${homeMotiv}`);
+            if (awayMotiv) mLines.push(`${match.away}: ${awayMotiv}`);
+            motivationBlock = `
+MOTIVATION & STAKES (crucial near season end — a team with nothing to play for often underperforms):
+${mLines.join("\n")}
+`;
+          }
         }
 
         // Build top scorers block filtered to home and away teams
@@ -936,10 +1026,13 @@ ${lines.join("\n")}
               return `${open}→${curr} (${pct > 0 ? "+" : ""}${pct}% ${pct < 0 ? "▼" : "▲"} ${signal})`;
             };
             const hasMovement = found.openingHome && found.openingHome !== found.homeOdds;
+            const pinnacleLine = found.pinnacleHome
+              ? `\nPinnacle (sharpest bookmaker — closest to true probabilities, weight this over the average): Home ${found.pinnacleHome} | Draw ${found.pinnacleDraw} | Away ${found.pinnacleAway}`
+              : "";
             oddsBlock = `
 REAL BOOKMAKER ODDS (averaged across major EU bookmakers — market consensus is highly predictive):
 1X2 Decimal: Home ${found.homeOdds} | Draw ${found.drawOdds} | Away ${found.awayOdds}
-Implied win probability: Home ${toImpl(found.homeOdds)}% | Draw ${toImpl(found.drawOdds)}% | Away ${toImpl(found.awayOdds)}%
+Implied win probability: Home ${toImpl(found.homeOdds)}% | Draw ${toImpl(found.drawOdds)}% | Away ${toImpl(found.awayOdds)}%${pinnacleLine}
 ${hasMovement ? `ODDS MOVEMENT (sharp money signal):
   Home: ${fmtMove(found.openingHome, found.homeOdds, found.homeMove, found.homeSignal || "")}
   Draw: ${fmtMove(found.openingDraw, found.drawOdds, found.drawMove, found.drawSignal || "")}
@@ -974,7 +1067,7 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
 
 
         // Build injuries block from API-Football (via RapidAPI)
-        if (apiFootball?.injuries || apiFootball?.prediction) {
+        if (apiFootball?.injuries || apiFootball?.prediction || apiFootball?.referee) {
           const inj = apiFootball.injuries;
           const pred = apiFootball.prediction;
           const lines: string[] = [];
@@ -982,6 +1075,21 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
           else if (inj) lines.push(`${match.home}: no injury concerns reported`);
           if (inj?.away?.length) lines.push(`${match.away} missing: ${inj.away.slice(0,5).join(", ")}`);
           else if (inj) lines.push(`${match.away}: no injury concerns reported`);
+          // Cross-reference injuries with top scorers — a missing top scorer matters far more
+          const lastName = (n: string) => n.replace(/\s*\(.*\)$/, "").trim().split(/\s+/).pop()?.toLowerCase() || "";
+          const checkKeyAbsence = (list: string[] | undefined, teamName: string) => {
+            if (!list?.length || !allScorers?.length) return;
+            const teamScorers = allScorers.filter((s: any) => s.team.toLowerCase().trim() === teamName.toLowerCase().trim());
+            for (const injStr of list.slice(0, 8)) {
+              const ln = lastName(injStr);
+              if (!ln) continue;
+              const hit = teamScorers.find((s: any) => lastName(s.name) === ln);
+              if (hit) lines.push(`⚠️ KEY ABSENCE: ${hit.name} is one of ${teamName}'s top scorers (${hit.goals} goals this season) and is unavailable — weigh this heavily`);
+            }
+          };
+          checkKeyAbsence(inj?.home, match.home);
+          checkKeyAbsence(inj?.away, match.away);
+          if (apiFootball.referee) lines.push(`Referee: ${apiFootball.referee} — factor in their card/penalty tendencies if known to you`);
           if (pred) {
             if (pred.advice) lines.push(`API-Football prediction: ${pred.advice}`);
             if (pred.percent) lines.push(`Market-implied: Home ${pred.percent.home} | Draw ${pred.percent.draw} | Away ${pred.percent.away}`);
@@ -1073,6 +1181,28 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
         if (lines.length) daysRestBlock = `\nSQUAD FRESHNESS (factor this into prediction):\n${lines.join("\n")}\n`;
       }
 
+      // Upcoming fixture congestion — rotation risk if a big match follows within 4 days
+      let rotationBlock = "";
+      if (!isRecent && match.rawDate) {
+        const normN = (n: string) => n.toLowerCase().trim();
+        const thisDate = new Date(match.rawDate);
+        const nextMatchNote = (team: string) => {
+          const tn = normN(team);
+          const next: any = (matches as any[])
+            .filter((m: any) => m.status === "upcoming" && m.id !== match.id &&
+              (normN(m.home) === tn || normN(m.away) === tn) &&
+              m.rawDate && new Date(m.rawDate) > thisDate)
+            .sort((a: any, b: any) => new Date(a.rawDate).getTime() - new Date(b.rawDate).getTime())[0];
+          if (!next) return null;
+          const days = Math.round((new Date(next.rawDate).getTime() - thisDate.getTime()) / 86400000);
+          if (days > 4) return null;
+          const big = ["UCL", "UEL"].includes(next.league);
+          return `  ${team}: plays ${next.home} vs ${next.away} (${next.league}) ${days} days after this match${big ? " ⚠️ ROTATION RISK — major European tie ahead, may rest key players in THIS match" : " (fixture congestion)"}`;
+        };
+        const rLines = [nextMatchNote(match.home), nextMatchNote(match.away)].filter(Boolean);
+        if (rLines.length) rotationBlock = `\nUPCOMING FIXTURE CONGESTION:\n${rLines.join("\n")}\n`;
+      }
+
       // 4. Fetch H2H history (upcoming matches only, requires matchId)
       let h2hBlock = "";
       if (!isRecent && match.matchId) {
@@ -1106,8 +1236,8 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}${daysRestBlock}
-Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, and weather conditions if relevant.
+${standingsBlock}${poissonBlock}${motivationBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}${daysRestBlock}${rotationBlock}
+Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, motivation/stakes, rotation risk, and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:
 {
@@ -1150,6 +1280,7 @@ Rules:
   * Never predict a scoreline where total goals > 4 unless xG data or H2H history strongly supports it
   * Typical EPL scorelines by match type — Defensive/Cagey: 1-0, 0-0; Balanced: 1-0, 1-1, 2-1; Open/End-to-end: 2-1, 2-2; High-scoring: 3-1, 3-2
 - winProbability values must sum to 100
+- If a POISSON MODEL BASELINE is provided, anchor winProbability on it (blended with Pinnacle/market implied probability); deviate by more than ±8% per outcome ONLY if injuries, confirmed lineups, motivation or rotation risk clearly justify it — explain the deviation in reasoning
 - confidencePercent calibration (cross-reference ALL available data before deciding):
   * 80-90%: Strong favourite — clear standings gap (5+ positions), positive H2H record (4+ wins in last 6), good recent form (3W+ in last 5). Example: top-4 team vs bottom-3 team at home.
   * 68-79%: Moderate favourite — meaningful standings gap OR H2H edge OR good form (not all three). Example: mid-table team with 3W H2H record vs struggling away side.

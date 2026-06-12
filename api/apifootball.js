@@ -86,6 +86,7 @@ export default async function handler(req,res){
     let teamSeasonStats=null;
     const hS=parseTeamStats(hStatD),aS=parseTeamStats(aStatD);
     if(hS||aS)teamSeasonStats={home:hS,away:aS};
-    return res.status(200).json({injuries,prediction,lineups,teamSeasonStats,debug:'ok',fixtureId:fid});
+    const referee=fix.fixture?.referee||null;
+    return res.status(200).json({injuries,prediction,lineups,teamSeasonStats,referee,debug:'ok',fixtureId:fid});
   }catch(e){return res.status(200).json({injuries:null,prediction:null,debug:'exception:'+e.message});}
 }
