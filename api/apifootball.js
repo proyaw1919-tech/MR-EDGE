@@ -72,7 +72,7 @@ export default async function handler(req,res){
       apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${aid}`,cfg),
     ]);
     let injuries=null;
-    if(injD?.response?.length){const hI=injD.response.filter(p=>p.team?.id===hid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`);const aI=injD.response.filter(p=>p.team?.id===aid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`);injuries={home:hI,away:aI};}
+    if(injD?.response?.length){const dedupe=a=>[...new Set(a)];const hI=dedupe(injD.response.filter(p=>p.team?.id===hid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`));const aI=dedupe(injD.response.filter(p=>p.team?.id===aid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`));injuries={home:hI,away:aI};}
     let prediction=null;
     if(predD?.response?.[0]){const p=predD.response[0],pr=p.predictions,ht=p.teams?.home,at=p.teams?.away;prediction={winner:pr?.winner?.name,advice:pr?.advice,percent:pr?.percent,goals:pr?.goals,homeForm:ht?.last_5?.form,awayForm:at?.last_5?.form,homeAtt:ht?.last_5?.att,homeDef:ht?.last_5?.def,awayAtt:at?.last_5?.att,awayDef:at?.last_5?.def,homeGoalsFor:ht?.last_5?.goals?.for?.average,homeGoalsAgainst:ht?.last_5?.goals?.against?.average,awayGoalsFor:at?.last_5?.goals?.for?.average,awayGoalsAgainst:at?.last_5?.goals?.against?.average};}
     // Confirmed lineups (only published ~20-40 min before kickoff; null before that)
