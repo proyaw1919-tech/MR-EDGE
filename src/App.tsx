@@ -1298,7 +1298,7 @@ Rules:
 - htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
 - scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
 - RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
-      // Try Claude (Opus 4.7) first, fall back to Gemini
+      // Try Claude (Opus 4.8) first, fall back to Gemini
       const callAI = async (endpoint: string, body: object, timeoutMs = 55000) => {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);

@@ -1,8 +1,8 @@
-// api/claude.js — Claude AI proxy (Opus 4.7 primary, Sonnet 4.6 fallback)
+// api/claude.js — Claude AI proxy (Opus 4.8 primary, Sonnet 4.6 fallback)
 
 const MODELS = [
-  "claude-opus-4-5",
-  "claude-sonnet-4-5",
+  "claude-opus-4-8",
+  "claude-sonnet-4-6",
 ];
 
 const ALLOWED_ORIGINS = [
@@ -80,7 +80,6 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             model,
             max_tokens: 8000,
-            temperature: 0.6,
             messages: [{ role: "user", content: prompt }],
           }),
         });
