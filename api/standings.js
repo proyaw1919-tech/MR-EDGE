@@ -59,7 +59,7 @@ function normalizeUnderstat(name) {
 
 async function fetchUnderstatXG(league) {
   const uKey = UNDERSTAT_LEAGUE_MAP[league];
-  if (!uKey) return {};
+  if (!uKey) return { map: {}, dbg: 'league_not_covered' };
   // Derive current season start year: if month >= July use this year, else previous year
   const now = new Date();
   const year = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
@@ -74,7 +74,7 @@ async function fetchUnderstatXG(league) {
       },
       signal: AbortSignal.timeout(8000),
     });
-    if (!r.ok) return {};
+    if (!r.ok) return { map: {}, dbg: `http_${r.status}` };
     const data = await r.json();
     const teamsData = data.teams || data.teamsData || {};
     const xgMap = {};
@@ -102,10 +102,24 @@ async function fetchUnderstatXG(league) {
         xgaRecent: last5.length ? parseFloat((xga5 / last5.length).toFixed(2)) : null,
       };
     }
-    return xgMap;
-  } catch {
-    return {};
+    return { map: xgMap, dbg: `ok_${Object.keys(xgMap).length}_teams` };
+  } catch (e) {
+    return { map: {}, dbg: `err_${e?.name || ''}_${String(e?.message || '').slice(0, 80)}` };
   }
+}
+
+// Fuzzy lookup: Understat names don't always match football-data shortNames
+// (e.g. "Inter" vs "Inter Milan", "West Ham" vs "West Ham United")
+function findXg(xgMap, teamName) {
+  if (xgMap[teamName]) return xgMap[teamName];
+  const normK = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const tn = normK(teamName);
+  if (!tn) return null;
+  const hit = Object.keys(xgMap).find(k => {
+    const kn = normK(k);
+    return kn === tn || kn.includes(tn) || tn.includes(kn);
+  });
+  return hit ? xgMap[hit] : null;
 }
 
 const LEAGUE_CODE_MAP = {
@@ -201,13 +215,14 @@ export default async function handler(req, res) {
     const dateFrom = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const dateTo   = new Date().toISOString().split('T')[0];
 
-    const [standingsRes, matchesRes, xgMap] = await Promise.all([
+    const [standingsRes, matchesRes, xgRes] = await Promise.all([
       fetch(`https://api.football-data.org/v4/competitions/${code}/standings`,
         { headers: { "X-Auth-Token": apiKey } }),
       fetch(`https://api.football-data.org/v4/competitions/${code}/matches?status=FINISHED&dateFrom=${dateFrom}&dateTo=${dateTo}`,
         { headers: { "X-Auth-Token": apiKey } }),
       fetchUnderstatXG(league),
     ]);
+    const xgMap = xgRes.map || {};
 
     if (!standingsRes.ok) return res.status(200).json({ standings: [], season: null });
 
@@ -258,7 +273,7 @@ export default async function handler(req, res) {
       const teamId = row.team?.id;
       const hr = homeMap[teamId];
       const ar = awayMap[teamId];
-      const xg = xgMap[teamName] || null;  // { xg, xga } per game averages or null
+      const xg = findXg(xgMap, teamName);  // { xg, xga } per game averages or null
       return {
         position: row.position,
         team: teamName,
@@ -296,7 +311,7 @@ export default async function handler(req, res) {
     });
 
     res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=3600");
-    return res.json({ standings, season: data.season?.currentMatchday || null });
+    return res.json({ standings, season: data.season?.currentMatchday || null, xgDebug: xgRes.dbg });
   } catch {
     return res.status(200).json({ standings: [], season: null });
   }
