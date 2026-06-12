@@ -64,28 +64,19 @@ async function fetchUnderstatXG(league) {
   const now = new Date();
   const year = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
   try {
-    const r = await fetch(`https://understat.com/league/${uKey}/${year}`, {
+    // Understat JSON endpoint (their site loads league data from here via AJAX)
+    const r = await fetch(`https://understat.com/getLeagueData/${uKey}/${year}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'application/json',
+        'Referer': `https://understat.com/league/${uKey}/${year}`,
+        'X-Requested-With': 'XMLHttpRequest',
       },
       signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return {};
-    const html = await r.text();
-
-    // Understat embeds: var teamsData = JSON.parse('...')
-    const m = html.match(/var\s+teamsData\s*=\s*JSON\.parse\('(.+?)'\)/s);
-    if (!m) return {};
-
-    // Decode the escaped string (Understat uses \xHH hex escapes + standard JSON escapes)
-    const raw = m[1]
-      .replace(/\\x([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\');
-
-    const teamsData = JSON.parse(raw);
+    const data = await r.json();
+    const teamsData = data.teams || data.teamsData || {};
     const xgMap = {};
 
     for (const team of Object.values(teamsData)) {
