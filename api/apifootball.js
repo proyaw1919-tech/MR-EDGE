@@ -1,11 +1,22 @@
-// api/apifootball.js — Injuries, form, predictions, lineups, team stats via RapidAPI (api-football-v1)
-// Env var required: RAPID_API_KEY  (Pro plan: 7,500 req/day)
+// api/apifootball.js — Injuries, form, predictions, lineups, team stats
+// Supports BOTH purchase channels (set whichever key you have in Vercel env):
+//   APIFOOTBALL_KEY — bought direct from api-football.com (v3.football.api-sports.io)
+//   RAPID_API_KEY   — bought via RapidAPI marketplace (api-football-v1.p.rapidapi.com)
 // Requests per call: 1 fixture lookup + 5 parallel (injuries, predictions, lineups, 2× team stats) = 6
 
 const LEAGUE_IDS = { EPL:39, Championship:40, LaLiga:140, SerieA:135, Bundesliga:78, Ligue1:61, UCL:2, UEL:3, Eredivisie:88, PrimeiraLiga:94, Brasileirao:71 };
 const getSeason = () => { const n=new Date(); return n.getMonth()>=7?n.getFullYear():n.getFullYear()-1; };
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g,'');
-async function apiFetch(path,key){try{const r=await fetch(`https://api-football-v1.p.rapidapi.com/v3${path}`,{headers:{'x-rapidapi-key':key,'x-rapidapi-host':'api-football-v1.p.rapidapi.com'}});if(!r.ok)return null;return r.json();}catch{return null;}}
+
+// Pick API host based on which key is configured (direct api-sports key takes priority)
+function getApiConfig(){
+  const direct=process.env.APIFOOTBALL_KEY;
+  if(direct)return{base:'https://v3.football.api-sports.io',headers:{'x-apisports-key':direct}};
+  const rapid=process.env.RAPID_API_KEY;
+  if(rapid)return{base:'https://api-football-v1.p.rapidapi.com/v3',headers:{'x-rapidapi-key':rapid,'x-rapidapi-host':'api-football-v1.p.rapidapi.com'}};
+  return null;
+}
+async function apiFetch(path,cfg){try{const r=await fetch(`${cfg.base}${path}`,{headers:cfg.headers});if(!r.ok)return null;return r.json();}catch{return null;}}
 
 // Extract the useful subset of /teams/statistics
 function parseTeamStats(d){
@@ -38,15 +49,15 @@ function parseLineup(entry){
 export default async function handler(req,res){
   res.setHeader('Access-Control-Allow-Origin','*');
   if(req.method==='OPTIONS')return res.status(204).end();
-  const key=process.env.RAPID_API_KEY;
-  if(!key)return res.status(200).json({injuries:null,prediction:null,debug:'no_key'});
+  const cfg=getApiConfig();
+  if(!cfg)return res.status(200).json({injuries:null,prediction:null,debug:'no_key'});
   const{home,away,date,league}=req.query;
   if(!home||!away||!date||!league)return res.status(200).json({injuries:null,prediction:null,debug:'missing_params'});
   const leagueId=LEAGUE_IDS[league];
   if(!leagueId)return res.status(200).json({injuries:null,prediction:null,debug:'unknown_league'});
   try{
     const season=getSeason();
-    const fd=await apiFetch(`/fixtures?date=${date}&league=${leagueId}&season=${season}`,key);
+    const fd=await apiFetch(`/fixtures?date=${date}&league=${leagueId}&season=${season}`,cfg);
     if(!fd)return res.status(200).json({injuries:null,prediction:null,debug:'api_error'});
     const rawErr=fd?.errors;const rawMsg=fd?.message;
     const mH=norm(home),mA=norm(away);
@@ -54,11 +65,11 @@ export default async function handler(req,res){
     if(!fix)return res.status(200).json({injuries:null,prediction:null,debug:`no_fixture_found_from_${fd?.response?.length||0}_results`,season,errors:rawErr,message:rawMsg,sampleTeams:fd?.response?.slice(0,3).map(f=>f.teams?.home?.name+' vs '+f.teams?.away?.name)});
     const fid=fix.fixture.id,hid=fix.teams.home.id,aid=fix.teams.away.id;
     const[injD,predD,lineD,hStatD,aStatD]=await Promise.all([
-      apiFetch(`/injuries?fixture=${fid}`,key),
-      apiFetch(`/predictions?fixture=${fid}`,key),
-      apiFetch(`/fixtures/lineups?fixture=${fid}`,key),
-      apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${hid}`,key),
-      apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${aid}`,key),
+      apiFetch(`/injuries?fixture=${fid}`,cfg),
+      apiFetch(`/predictions?fixture=${fid}`,cfg),
+      apiFetch(`/fixtures/lineups?fixture=${fid}`,cfg),
+      apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${hid}`,cfg),
+      apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${aid}`,cfg),
     ]);
     let injuries=null;
     if(injD?.response?.length){const hI=injD.response.filter(p=>p.team?.id===hid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`);const aI=injD.response.filter(p=>p.team?.id===aid).map(p=>`${p.player?.name} (${p.player?.reason||p.player?.type||'injury'})`);injuries={home:hI,away:aI};}
