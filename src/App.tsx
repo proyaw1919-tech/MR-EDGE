@@ -3049,7 +3049,12 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
       )}
 
       {(() => {
-        const realOdds = oddsFound?.homeOdds ? { home: oddsFound.homeOdds, draw: oddsFound.drawOdds, away: oddsFound.awayOdds } : matchOdds;
+        // Coerce odds to numbers — matchOdds from the AI are strings ("5.50");
+        // oddsFound (The Odds API) are numbers but absent for World Cup.
+        const toNum = (v: any) => { const n = typeof v === "number" ? v : parseFloat(v); return isNaN(n) ? 0 : n; };
+        const realOdds = oddsFound?.homeOdds
+          ? { home: oddsFound.homeOdds, draw: oddsFound.drawOdds, away: oddsFound.awayOdds }
+          : matchOdds ? { home: toNum(matchOdds.home), draw: toNum(matchOdds.draw), away: toNum(matchOdds.away) } : null;
         if (!realOdds || !prob.home) return null;
         const VALUE_THRESHOLD = 7;
         const bets = [
