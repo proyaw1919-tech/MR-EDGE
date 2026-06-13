@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v7"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v8"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -934,6 +934,7 @@ export default function BM8Predictor() {
       let weatherBlock = "";
       let poissonBlock = "";
       let motivationBlock = "";
+      let cornersBlock = "";
       let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
       let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
@@ -1120,6 +1121,21 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
           }
         }
 
+        // Corner-kick averages from API-Football (last ~7 matches per team)
+        const corn = apiFootball?.corners;
+        if (corn && (corn.home || corn.away)) {
+          const cLines: string[] = [];
+          if (corn.home) cLines.push(`${match.home}: wins ${corn.home.for} corners/game, concedes ${corn.home.against}/game (last ${corn.home.games} matches)`);
+          if (corn.away) cLines.push(`${match.away}: wins ${corn.away.for} corners/game, concedes ${corn.away.against}/game (last ${corn.away.games} matches)`);
+          if (corn.home && corn.away) {
+            // Expected total = (home corners won + away corners conceded)/2 + (away corners won + home corners conceded)/2
+            const expHome = (corn.home.for + corn.away.against) / 2;
+            const expAway = (corn.away.for + corn.home.against) / 2;
+            cLines.push(`Statistical expected total corners: ${(expHome + expAway).toFixed(1)} (home ~${expHome.toFixed(1)}, away ~${expAway.toFixed(1)})`);
+          }
+          cornersBlock = `\nCORNER KICK DATA (API-Football real averages — use to predict the corners JSON field):\n${cLines.join("\n")}\n`;
+        }
+
         // Confirmed lineups from API-Football (published ~20-40 min before kickoff)
         const afLineups = apiFootball?.lineups;
         if (afLineups && (afLineups.home || afLineups.away)) {
@@ -1236,8 +1252,8 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${poissonBlock}${motivationBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${lineupBlock}${weatherBlock}${daysRestBlock}${rotationBlock}
-Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, motivation/stakes, rotation risk, and weather conditions if relevant.
+${standingsBlock}${poissonBlock}${motivationBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${cornersBlock}${lineupBlock}${weatherBlock}${daysRestBlock}${rotationBlock}
+Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, motivation/stakes, rotation risk, corner-kick tendencies, and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:
 {
@@ -1251,6 +1267,7 @@ Respond ONLY with valid JSON in this EXACT structure:
   "matchType": "<one phrase: e.g. High-scoring | Tactical | Open | Defensive | Cagey | End-to-end>",
   "overUnder25": {"over": "<odds e.g. 2.10>", "under": "<odds e.g. 1.75>"},
   "htPrediction": {"home": <int>, "away": <int>},
+  "corners": {"homeCorners": <int>, "awayCorners": <int>, "totalCorners": <int>, "line": "<e.g. Over 9.5>", "recommendation": "<Over|Under> <X.5> corners", "confidence": "Low|Medium|High"},
   "scorelineProbabilities": [{"score": "1-0", "prob": <int>}, {"score": "0-0", "prob": <int>}, {"score": "2-1", "prob": <int>}],
   "homeForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "awayForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
@@ -1297,6 +1314,7 @@ Rules:
 - bttsChance: integer 0-100 representing % probability both teams score
 - htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
 - scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
+- corners: predict total corners for the match. If CORNER KICK DATA is provided above, anchor homeCorners/awayCorners/totalCorners on those real averages (a typical match has 8-12 total corners). Set "recommendation" to the over/under line you'd bet (e.g. "Over 9.5 corners") and "confidence" based on how consistent the data is. If no corner data is provided, estimate from team attacking style and set confidence to "Low".
 - RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
       // Try Claude (Opus 4.8) first, fall back to Gemini
       const callAI = async (endpoint: string, body: object, timeoutMs = 55000) => {
@@ -2872,7 +2890,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
     matchOdds, estGoals, bttsChance, matchType, overUnder25,
     homeForm, awayForm,
     keyFactors, reasoning, watchOut,
-    playerWatch, injuries, htPrediction, scorelineProbabilities
+    playerWatch, injuries, htPrediction, scorelineProbabilities, corners
   } = result;
 
   const confPct = typeof confidencePercent === "number" ? confidencePercent
@@ -3012,6 +3030,32 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
               <div style={{ fontSize: 22, fontWeight: 700, color: "#60a5fa", fontFamily: "inherit" }}>{overUnder25.under}</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {corners && (corners.totalCorners != null || corners.recommendation) && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={styles.sectionTitle}>⛳ CORNERS</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
+            <div style={{ padding: "12px 10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, textAlign: "center" }}>
+              <div style={{ fontSize: 10, color: "#8a8a8a", marginBottom: 4 }}>{match.home}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>{corners.homeCorners ?? "–"}</div>
+            </div>
+            <div style={{ padding: "12px 10px", background: "rgba(240,180,41,0.1)", border: "1px solid rgba(240,180,41,0.35)", borderRadius: 6, textAlign: "center" }}>
+              <div style={{ fontSize: 10, color: "#8a8a8a", marginBottom: 4 }}>TOTAL</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "#F0B429", fontFamily: "inherit" }}>{corners.totalCorners ?? "–"}</div>
+            </div>
+            <div style={{ padding: "12px 10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, textAlign: "center" }}>
+              <div style={{ fontSize: 10, color: "#8a8a8a", marginBottom: 4 }}>{match.away}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>{corners.awayCorners ?? "–"}</div>
+            </div>
+          </div>
+          {corners.recommendation && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#22c55e", fontFamily: "inherit" }}>{corners.recommendation}</span>
+              {corners.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{corners.confidence} confidence</span>}
+            </div>
+          )}
         </div>
       )}
 
