@@ -638,7 +638,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v12"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v13"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -1326,6 +1326,7 @@ Respond ONLY with valid JSON in this EXACT structure:
   "corners": {"homeCorners": <int>, "awayCorners": <int>, "totalCorners": <int>, "line": "<e.g. Over 9.5>", "recommendation": "<Over|Under> <X.5> corners", "confidence": "Low|Medium|High"},
   "cards": {"homeCards": <number>, "awayCards": <number>, "totalCards": <number>, "recommendation": "<Over|Under> <X.5> cards", "confidence": "Low|Medium|High"},
   "handicap": {"line": "<Asian handicap line from the home team's perspective, e.g. -0.5, +1, 0>", "pick": "home|away", "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
+  "goalsOU": {"line": "<the goals line, e.g. 2.5>", "pick": "over|under", "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
   "scorelineProbabilities": [{"score": "1-0", "prob": <int>}, {"score": "0-0", "prob": <int>}, {"score": "2-1", "prob": <int>}],
   "homeForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "awayForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
@@ -1374,6 +1375,7 @@ Rules:
 - htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
 - scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
 - corners: predict total corners for the match. If CORNER KICK DATA is provided above, anchor homeCorners/awayCorners/totalCorners on those real averages (a typical match has 8-12 total corners). Set "recommendation" to the over/under line you'd bet (e.g. "Over 9.5 corners") and "confidence" based on how consistent the data is. If no corner data is provided, estimate from team attacking style and set confidence to "Low".
+- goalsOU: recommend Over or Under total goals. Anchor on estGoals and, if provided, the SPORTMONKS Over/Under probabilities and the market O/U line/odds. Use the market line (usually 2.5) as "line". Pick "over" if expected goals clearly exceed the line, "under" if clearly below; set confidence Low when it's close to the line. Keep "reasoning" to one short sentence.
 - handicap: recommend the Asian Handicap bet. If a market Asian Handicap line is provided above, use that exact line and decide which side (home/away) is more likely to cover it based on your win probability and expected margin. If no market line is given, infer a sensible line from your prediction. "line" is always from the home team's perspective (negative = home gives goals, positive = home receives). Set confidence on how clear the edge is.
 - cards: predict total cards (yellow+red combined) for the match. If CARD DATA is provided above, anchor homeCards/awayCards/totalCards on those real averages (a typical match has 3-5 total cards; derbies, relegation battles and strict referees push higher). Factor in the referee if known and match intensity/stakes. Set "recommendation" to the over/under line you'd bet (e.g. "Over 4.5 cards") and "confidence" on data consistency. If no card data is provided, estimate from match intensity and set confidence to "Low".
 - RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
@@ -2959,7 +2961,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
     matchOdds, estGoals, bttsChance, matchType, overUnder25,
     homeForm, awayForm,
     keyFactors, reasoning, watchOut,
-    playerWatch, injuries, htPrediction, scorelineProbabilities, corners, cards, handicap
+    playerWatch, injuries, htPrediction, scorelineProbabilities, corners, cards, handicap, goalsOU
   } = result;
 
   // Guard: if the AI response is missing the core score, show a graceful retry
@@ -3102,21 +3104,40 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
         </div>
       )}
 
-      {overUnder25 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={styles.sectionTitle}>{t.overUnderGoals || "Goals Over/Under 2.5"}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div style={{ padding: "14px 16px", background: "rgba(34, 197, 94, 0.08)", border: "1px solid rgba(34, 197, 94, 0.3)", borderRadius: 6, textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>Over 2.5</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#22c55e", fontFamily: "inherit" }}>{overUnder25.over}</div>
-            </div>
-            <div style={{ padding: "14px 16px", background: "rgba(96, 165, 250, 0.08)", border: "1px solid rgba(96, 165, 250, 0.3)", borderRadius: 6, textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>Under 2.5</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#60a5fa", fontFamily: "inherit" }}>{overUnder25.under}</div>
-            </div>
+      {(overUnder25 || goalsOU) && (() => {
+        const ouLine = goalsOU?.line || "2.5";
+        const pick = goalsOU?.pick; // "over" | "under"
+        const overPicked = pick === "over";
+        const underPicked = pick === "under";
+        return (
+          <div style={{ marginBottom: 20 }}>
+            <div style={styles.sectionTitle}>{t.overUnderGoals || "Goals Over/Under"}</div>
+            {overUnder25 && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: goalsOU?.pick ? 8 : 0 }}>
+                <div style={{ padding: "14px 16px", background: "rgba(34, 197, 94, 0.08)", border: `1px solid rgba(34, 197, 94, ${overPicked ? 0.7 : 0.3})`, borderRadius: 6, textAlign: "center", position: "relative" as const }}>
+                  <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>Over {ouLine}{overPicked ? " ✓" : ""}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#22c55e", fontFamily: "inherit" }}>{overUnder25.over}</div>
+                </div>
+                <div style={{ padding: "14px 16px", background: "rgba(96, 165, 250, 0.08)", border: `1px solid rgba(96, 165, 250, ${underPicked ? 0.7 : 0.3})`, borderRadius: 6, textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>Under {ouLine}{underPicked ? " ✓" : ""}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#60a5fa", fontFamily: "inherit" }}>{overUnder25.under}</div>
+                </div>
+              </div>
+            )}
+            {goalsOU?.pick && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: overPicked ? "rgba(34,197,94,0.08)" : "rgba(96,165,250,0.08)", border: `1px solid ${overPicked ? "rgba(34,197,94,0.3)" : "rgba(96,165,250,0.3)"}`, borderRadius: 6 }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: overPicked ? "#22c55e" : "#60a5fa", fontFamily: "inherit" }}>
+                    {overPicked ? "Over" : "Under"} {ouLine} {lang === "zh" ? "进球" : "goals"}
+                  </span>
+                  {goalsOU.reasoning && <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 3 }}>{goalsOU.reasoning}</div>}
+                </div>
+                {goalsOU.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em", whiteSpace: "nowrap" as const }}>{goalsOU.confidence} confidence</span>}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {handicap && (handicap.line != null && handicap.pick) && (
         <div style={{ marginBottom: 20 }}>
