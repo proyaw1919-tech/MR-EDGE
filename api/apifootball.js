@@ -29,27 +29,22 @@ function getRedis(){
 }
 
 // Average corners won / conceded over a team's recent finished matches (cached 12h)
-async function fetchCornerAvg(teamId,season,cfg,redis,dbg){
+async function fetchCornerAvg(teamId,season,cfg,redis){
   const cacheKey=`corners:${season}:${teamId}`;
-  if(redis){try{const c=await redis.get(cacheKey);if(c){if(dbg)dbg.cached=true;return c;}}catch{}}
+  if(redis){try{const c=await redis.get(cacheKey);if(c)return c;}catch{}}
   const fl=await apiFetch(`/fixtures?team=${teamId}&last=7`,cfg);
-  const all=(fl?.response||[]);
-  const fixtures=all.filter(f=>['FT','AET','PEN'].includes(f.fixture?.status?.short));
-  if(dbg){dbg.fixturesReturned=all.length;dbg.finished=fixtures.length;dbg.statuses=all.map(f=>f.fixture?.status?.short);}
+  const fixtures=(fl?.response||[]).filter(f=>['FT','AET','PEN'].includes(f.fixture?.status?.short));
   if(!fixtures.length)return null;
   const statArr=await Promise.all(fixtures.map(f=>apiFetch(`/fixtures/statistics?fixture=${f.fixture.id}`,cfg)));
   const getC=t=>{const s=(t?.statistics||[]).find(x=>x.type==='Corner Kicks');return s&&s.value!=null?Number(s.value):null;};
   let forSum=0,againstSum=0,games=0;
-  let sampleTypes=null;
   for(const sd of statArr){
     const resp=sd?.response;if(!resp||resp.length<2)continue;
-    if(!sampleTypes)sampleTypes=(resp[0]?.statistics||[]).map(x=>x.type);
     const mine=resp.find(t=>t.team?.id===teamId);
     const opp=resp.find(t=>t.team?.id!==teamId);
     const cf=getC(mine),ca=getC(opp);
     if(cf!=null){forSum+=cf;againstSum+=(ca??0);games++;}
   }
-  if(dbg){dbg.games=games;dbg.sampleTypes=sampleTypes;}
   if(!games)return null;
   const result={for:parseFloat((forSum/games).toFixed(1)),against:parseFloat((againstSum/games).toFixed(1)),games};
   if(redis){try{await redis.set(cacheKey,result,{ex:12*3600});}catch{}}
@@ -103,14 +98,13 @@ export default async function handler(req,res){
     if(!fix)return res.status(200).json({injuries:null,prediction:null,debug:`no_fixture_found_from_${fd?.response?.length||0}_results`,season,errors:rawErr,message:rawMsg,sampleTeams:fd?.response?.slice(0,3).map(f=>f.teams?.home?.name+' vs '+f.teams?.away?.name)});
     const fid=fix.fixture.id,hid=fix.teams.home.id,aid=fix.teams.away.id;
     const redis=getRedis();
-    const cornDbg={};
     const[injD,predD,lineD,hStatD,aStatD,hCorners,aCorners]=await Promise.all([
       apiFetch(`/injuries?fixture=${fid}`,cfg),
       apiFetch(`/predictions?fixture=${fid}`,cfg),
       apiFetch(`/fixtures/lineups?fixture=${fid}`,cfg),
       apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${hid}`,cfg),
       apiFetch(`/teams/statistics?league=${leagueId}&season=${season}&team=${aid}`,cfg),
-      fetchCornerAvg(hid,season,cfg,redis,cornDbg),
+      fetchCornerAvg(hid,season,cfg,redis),
       fetchCornerAvg(aid,season,cfg,redis),
     ]);
     let injuries=null;
@@ -131,6 +125,6 @@ export default async function handler(req,res){
     const referee=fix.fixture?.referee||null;
     let corners=null;
     if(hCorners||aCorners)corners={home:hCorners,away:aCorners};
-    return res.status(200).json({injuries,prediction,lineups,teamSeasonStats,referee,corners,cornDbg,debug:'ok',fixtureId:fid});
+    return res.status(200).json({injuries,prediction,lineups,teamSeasonStats,referee,corners,debug:'ok',fixtureId:fid});
   }catch(e){return res.status(200).json({injuries:null,prediction:null,debug:'exception:'+e.message});}
 }
