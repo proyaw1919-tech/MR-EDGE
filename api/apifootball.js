@@ -53,8 +53,45 @@ async function fetchSportmonksWC(home,away,date){
       return smTeamMatch(home,h.name)&&smTeamMatch(away,a.name);
     });
     if(!fix)return null;
-    const pd=await (await fetch(`https://api.sportmonks.com/v3/football/predictions/probabilities/fixtures/${fix.id}?api_token=${key}&include=type`)).json();
+    const [pd,od]=await Promise.all([
+      fetch(`https://api.sportmonks.com/v3/football/predictions/probabilities/fixtures/${fix.id}?api_token=${key}&include=type`).then(r=>r.json()),
+      fetch(`https://api.sportmonks.com/v3/football/odds/pre-match/fixtures/${fix.id}/bookmakers/2?api_token=${key}&filters=markets:1,6,80,67`).then(r=>r.json()).catch(()=>null),
+    ]);
     const arr=pd?.data||[];
+    // ── Market odds (bet365): 1X2, Asian Handicap, O/U goals, Corners ──
+    let marketOdds=null;
+    const oArr=od?.data||[];
+    if(oArr.length){
+      const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
+      const byMkt=id=>oArr.filter(o=>o.market_id===id);
+      // 1X2
+      const x2=byMkt(1);const pick=lab=>num(x2.find(o=>o.label===lab)?.value);
+      const oneX2={home:pick('Home'),draw:pick('Draw'),away:pick('Away')};
+      // Asian Handicap — main line = home price closest to 1.90
+      const ah=byMkt(6);const homes=ah.filter(o=>o.label==='1'&&o.handicap!=null);
+      let asianHandicap=null;
+      if(homes.length){
+        homes.sort((a,b)=>Math.abs(num(a.value)-1.9)-Math.abs(num(b.value)-1.9));
+        const hb=homes[0];const hHcp=num(hb.handicap);
+        const ab=ah.find(o=>o.label==='2'&&num(o.handicap)===-hHcp);
+        asianHandicap={line:hb.handicap,homePrice:num(hb.value),awayPrice:ab?num(ab.value):null};
+      }
+      // O/U goals + Corners — pick the most balanced total line
+      const balanced=(rows)=>{
+        const totals={};
+        rows.forEach(o=>{const tot=o.total;if(tot==null)return;totals[tot]=totals[tot]||{};if(o.label==='Over')totals[tot].over=num(o.value);if(o.label==='Under')totals[tot].under=num(o.value);});
+        let best=null;
+        for(const [line,v] of Object.entries(totals)){
+          if(v.over==null||v.under==null)continue;
+          const spread=Math.abs(v.over-v.under);
+          if(!best||spread<best.spread)best={line,over:v.over,under:v.under,spread};
+        }
+        return best?{line:best.line,over:best.over,under:best.under}:null;
+      };
+      const ouGoals=balanced(byMkt(80));
+      const corners=balanced(byMkt(67));
+      if(oneX2.home||asianHandicap||ouGoals||corners)marketOdds={bookmaker:'bet365',oneX2,asianHandicap,ouGoals,corners};
+    }
     const get=name=>arr.find(p=>p.type?.developer_name===name||p.type?.name===name)?.predictions;
     const ftr=get('Fulltime Result Probability');
     const ou25=get('Over/Under 2.5 Probability');
@@ -68,8 +105,8 @@ async function fetchSportmonksWC(home,away,date){
       topScores=Object.entries(csRaw.scores).map(([score,prob])=>({score,prob:Number(prob)}))
         .sort((a,b)=>b.prob-a.prob).slice(0,3).map(s=>({score:s.score,prob:parseFloat(s.prob.toFixed(1))}));
     }
-    if(!ftr&&!ou25&&!btts)return null;
-    return {fixtureId:fix.id,fulltimeResult:ftr||null,ou25:ou25||null,ou15:ou15||null,ou35:ou35||null,btts:btts||null,doubleChance:dc||null,topScores};
+    if(!ftr&&!ou25&&!btts&&!marketOdds)return null;
+    return {fixtureId:fix.id,fulltimeResult:ftr||null,ou25:ou25||null,ou15:ou15||null,ou35:ou35||null,btts:btts||null,doubleChance:dc||null,topScores,marketOdds};
   }catch{return null;}
 }
 

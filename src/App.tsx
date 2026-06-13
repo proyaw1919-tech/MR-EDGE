@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v10"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v11"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -1161,8 +1161,16 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
           if (sm.ou35) sLines.push(`Over/Under 3.5 goals: Over ${sm.ou35.yes}% | Under ${sm.ou35.no}%`);
           if (sm.btts) sLines.push(`Both teams to score: Yes ${sm.btts.yes}% | No ${sm.btts.no}%`);
           if (sm.topScores?.length) sLines.push(`Most likely scores: ${sm.topScores.map((s: any) => `${s.score} (${s.prob}%)`).join(", ")}`);
+          // Real bookmaker market odds (bet365) — handicap, O/U, 1X2, corners
+          const mo = sm.marketOdds;
+          if (mo) {
+            if (mo.oneX2?.home) sLines.push(`Market 1X2 odds (${mo.bookmaker}): ${match.home} ${mo.oneX2.home} | Draw ${mo.oneX2.draw} | ${match.away} ${mo.oneX2.away}`);
+            if (mo.asianHandicap) sLines.push(`Asian Handicap (${mo.bookmaker}): ${match.home} ${mo.asianHandicap.line} @ ${mo.asianHandicap.homePrice} / ${match.away} ${(parseFloat(mo.asianHandicap.line) * -1).toString()} @ ${mo.asianHandicap.awayPrice}`);
+            if (mo.ouGoals) sLines.push(`Goals Over/Under ${mo.ouGoals.line}: Over ${mo.ouGoals.over} / Under ${mo.ouGoals.under}`);
+            if (mo.corners) sLines.push(`Corners line ${mo.corners.line}: Over ${mo.corners.over} / Under ${mo.corners.under} — use this to fill the corners JSON field`);
+          }
           if (sLines.length) {
-            sportmonksBlock = `\nSPORTMONKS WORLD CUP MODEL (dedicated ML prediction model — this is the STRONGEST data source for this match; anchor winProbability, estGoals, bttsChance and scorelineProbabilities on it):\n${sLines.join("\n")}\n`;
+            sportmonksBlock = `\nSPORTMONKS WORLD CUP MODEL + MARKET ODDS (dedicated ML model + real bet365 odds — this is the STRONGEST data source for this match; anchor winProbability, estGoals, bttsChance, scorelineProbabilities, corners AND the handicap recommendation on it):\n${sLines.join("\n")}\n`;
           }
         }
 
@@ -1299,6 +1307,7 @@ Respond ONLY with valid JSON in this EXACT structure:
   "htPrediction": {"home": <int>, "away": <int>},
   "corners": {"homeCorners": <int>, "awayCorners": <int>, "totalCorners": <int>, "line": "<e.g. Over 9.5>", "recommendation": "<Over|Under> <X.5> corners", "confidence": "Low|Medium|High"},
   "cards": {"homeCards": <number>, "awayCards": <number>, "totalCards": <number>, "recommendation": "<Over|Under> <X.5> cards", "confidence": "Low|Medium|High"},
+  "handicap": {"line": "<Asian handicap line from the home team's perspective, e.g. -0.5, +1, 0>", "pick": "home|away", "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
   "scorelineProbabilities": [{"score": "1-0", "prob": <int>}, {"score": "0-0", "prob": <int>}, {"score": "2-1", "prob": <int>}],
   "homeForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "awayForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
@@ -1347,6 +1356,7 @@ Rules:
 - htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
 - scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
 - corners: predict total corners for the match. If CORNER KICK DATA is provided above, anchor homeCorners/awayCorners/totalCorners on those real averages (a typical match has 8-12 total corners). Set "recommendation" to the over/under line you'd bet (e.g. "Over 9.5 corners") and "confidence" based on how consistent the data is. If no corner data is provided, estimate from team attacking style and set confidence to "Low".
+- handicap: recommend the Asian Handicap bet. If a market Asian Handicap line is provided above, use that exact line and decide which side (home/away) is more likely to cover it based on your win probability and expected margin. If no market line is given, infer a sensible line from your prediction. "line" is always from the home team's perspective (negative = home gives goals, positive = home receives). Set confidence on how clear the edge is.
 - cards: predict total cards (yellow+red combined) for the match. If CARD DATA is provided above, anchor homeCards/awayCards/totalCards on those real averages (a typical match has 3-5 total cards; derbies, relegation battles and strict referees push higher). Factor in the referee if known and match intensity/stakes. Set "recommendation" to the over/under line you'd bet (e.g. "Over 4.5 cards") and "confidence" on data consistency. If no card data is provided, estimate from match intensity and set confidence to "Low".
 - RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
       // Try Claude (Opus 4.8) first, fall back to Gemini
@@ -2923,7 +2933,7 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
     matchOdds, estGoals, bttsChance, matchType, overUnder25,
     homeForm, awayForm,
     keyFactors, reasoning, watchOut,
-    playerWatch, injuries, htPrediction, scorelineProbabilities, corners, cards
+    playerWatch, injuries, htPrediction, scorelineProbabilities, corners, cards, handicap
   } = result;
 
   const confPct = typeof confidencePercent === "number" ? confidencePercent
@@ -3062,6 +3072,21 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
               <div style={{ fontSize: 11, color: "#8a8a8a", marginBottom: 4 }}>Under 2.5</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: "#60a5fa", fontFamily: "inherit" }}>{overUnder25.under}</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {handicap && (handicap.line != null && handicap.pick) && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={styles.sectionTitle}>📐 ASIAN HANDICAP</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.35)", borderRadius: 6 }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#60a5fa", fontFamily: "inherit" }}>
+                {handicap.pick === "home" ? match.home : match.away} {handicap.line}
+              </div>
+              {handicap.reasoning && <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 3 }}>{handicap.reasoning}</div>}
+            </div>
+            {handicap.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em", whiteSpace: "nowrap" as const }}>{handicap.confidence} confidence</span>}
           </div>
         </div>
       )}
