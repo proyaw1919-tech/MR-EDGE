@@ -620,7 +620,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v9"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v10"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -936,6 +936,7 @@ export default function BM8Predictor() {
       let motivationBlock = "";
       let cornersBlock = "";
       let cardsBlock = "";
+      let sportmonksBlock = "";
       let capturedTeamStats: { home: any; away: any } = { home: null, away: null };
       let capturedOddsFound: any = null;
       let homeFormArr: string[] = [];
@@ -1150,6 +1151,21 @@ ${fmtStats(teamStats.away, match.away + " (Away)")}
           cardsBlock = `\nCARD DATA (API-Football real averages, yellow+red combined — use to predict the cards JSON field):\n${kLines.join("\n")}\n`;
         }
 
+        // Sportmonks World Cup model probabilities (strong anchor for WC matches)
+        const sm = apiFootball?.sportmonks;
+        if (sm) {
+          const sLines: string[] = [];
+          if (sm.fulltimeResult) sLines.push(`1X2 win probability: ${match.home} ${sm.fulltimeResult.home}% | Draw ${sm.fulltimeResult.draw}% | ${match.away} ${sm.fulltimeResult.away}%`);
+          if (sm.ou25) sLines.push(`Over/Under 2.5 goals: Over ${sm.ou25.yes}% | Under ${sm.ou25.no}%`);
+          if (sm.ou15) sLines.push(`Over/Under 1.5 goals: Over ${sm.ou15.yes}% | Under ${sm.ou15.no}%`);
+          if (sm.ou35) sLines.push(`Over/Under 3.5 goals: Over ${sm.ou35.yes}% | Under ${sm.ou35.no}%`);
+          if (sm.btts) sLines.push(`Both teams to score: Yes ${sm.btts.yes}% | No ${sm.btts.no}%`);
+          if (sm.topScores?.length) sLines.push(`Most likely scores: ${sm.topScores.map((s: any) => `${s.score} (${s.prob}%)`).join(", ")}`);
+          if (sLines.length) {
+            sportmonksBlock = `\nSPORTMONKS WORLD CUP MODEL (dedicated ML prediction model — this is the STRONGEST data source for this match; anchor winProbability, estGoals, bttsChance and scorelineProbabilities on it):\n${sLines.join("\n")}\n`;
+          }
+        }
+
         // Confirmed lineups from API-Football (published ~20-40 min before kickoff)
         const afLineups = apiFootball?.lineups;
         if (afLineups && (afLineups.home || afLineups.away)) {
@@ -1266,7 +1282,7 @@ Respond ONLY with valid JSON:
         : `You are an expert football analyst with deep knowledge of betting markets, xG (expected goals), and team form. Predict this match using the real data provided AND your football knowledge.
 MATCH: ${match.home} (HOME) vs ${match.away} (AWAY)
 COMPETITION: ${match.league} · DATE: ${match.date} ${match.time || ""}
-${standingsBlock}${poissonBlock}${motivationBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${cornersBlock}${cardsBlock}${lineupBlock}${weatherBlock}${daysRestBlock}${rotationBlock}
+${sportmonksBlock}${standingsBlock}${poissonBlock}${motivationBlock}${scorersBlock}${h2hBlock}${oddsBlock}${teamStatsBlock}${injuriesBlock}${cornersBlock}${cardsBlock}${lineupBlock}${weatherBlock}${daysRestBlock}${rotationBlock}
 Consider: home advantage, league position gap, recent form, head-to-head patterns, bookmaker odds, possession/shooting stats, big chances created, injuries/suspensions to key players, motivation/stakes, rotation risk, corner-kick tendencies, card/discipline tendencies (and referee strictness), and weather conditions if relevant.
 
 Respond ONLY with valid JSON in this EXACT structure:
@@ -1312,6 +1328,7 @@ Rules:
   * Never predict a scoreline where total goals > 4 unless xG data or H2H history strongly supports it
   * Typical EPL scorelines by match type — Defensive/Cagey: 1-0, 0-0; Balanced: 1-0, 1-1, 2-1; Open/End-to-end: 2-1, 2-2; High-scoring: 3-1, 3-2
 - winProbability values must sum to 100
+- If a SPORTMONKS WORLD CUP MODEL is provided, it is the most reliable source — anchor winProbability directly on its 1X2 probabilities, estGoals/overUnder25 on its Over/Under numbers, and bttsChance on its BTTS number. Only deviate for confirmed late team news (injuries/lineups), and explain why.
 - If a POISSON MODEL BASELINE is provided, anchor winProbability on it (blended with Pinnacle/market implied probability); deviate by more than ±8% per outcome ONLY if injuries, confirmed lineups, motivation or rotation risk clearly justify it — explain the deviation in reasoning
 - confidencePercent calibration (cross-reference ALL available data before deciding):
   * 80-90%: Strong favourite — clear standings gap (5+ positions), positive H2H record (4+ wins in last 6), good recent form (3W+ in last 5). Example: top-4 team vs bottom-3 team at home.

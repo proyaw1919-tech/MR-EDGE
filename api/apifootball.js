@@ -28,6 +28,51 @@ function getRedis(){
   try{return new Redis({url,token});}catch{return null;}
 }
 
+// ── Sportmonks World Cup (league 732) — fixtures + ML prediction probabilities ──
+const SM_LEAGUE_WC=732;
+const smNorm=s=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const SM_ALIAS={usa:'unitedstates',turkey:'turkiye',czechia:'czechrepublic',bosniah:'bosniaandherzegovina',ivorycoast:'cotedivoire',drcongo:'congodr',capeverde:'capeverdeislands',southkorea:'korearepublic',iranislamicrepublic:'iran'};
+const smCanon=s=>{const n=smNorm(s);return SM_ALIAS[n]||n;};
+function smTeamMatch(a,b){const x=smCanon(a),y=smCanon(b);if(!x||!y)return false;return x===y||x.startsWith(y.slice(0,5))||y.startsWith(x.slice(0,5))||x.includes(y)||y.includes(x);}
+
+async function fetchSportmonksWC(home,away,date){
+  const key=process.env.SPORTMONKS_API_KEY;
+  if(!key)return null;
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=dt=>`${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
+  const d0=new Date(date);if(isNaN(d0))return null;
+  const start=fmt(new Date(d0.getTime()-86400000)),end=fmt(new Date(d0.getTime()+86400000));
+  try{
+    const listUrl=`https://api.sportmonks.com/v3/football/fixtures/between/${start}/${end}?api_token=${key}&include=participants&filters=fixtureLeagues:${SM_LEAGUE_WC}`;
+    const ld=await (await fetch(listUrl)).json();
+    const fixtures=ld?.data||[];
+    const fix=fixtures.find(f=>{
+      const ps=f.participants||[];if(ps.length<2)return false;
+      const h=ps.find(p=>p.meta?.location==='home'),a=ps.find(p=>p.meta?.location==='away');
+      if(!h||!a)return false;
+      return smTeamMatch(home,h.name)&&smTeamMatch(away,a.name);
+    });
+    if(!fix)return null;
+    const pd=await (await fetch(`https://api.sportmonks.com/v3/football/predictions/probabilities/fixtures/${fix.id}?api_token=${key}&include=type`)).json();
+    const arr=pd?.data||[];
+    const get=name=>arr.find(p=>p.type?.developer_name===name||p.type?.name===name)?.predictions;
+    const ftr=get('Fulltime Result Probability');
+    const ou25=get('Over/Under 2.5 Probability');
+    const ou15=get('Over/Under 1.5 Probability');
+    const ou35=get('Over/Under 3.5 Probability');
+    const btts=get('Both Teams To Score Probability');
+    const dc=get('Double Chance Probability');
+    const csRaw=get('Correct Score Probability');
+    let topScores=null;
+    if(csRaw?.scores){
+      topScores=Object.entries(csRaw.scores).map(([score,prob])=>({score,prob:Number(prob)}))
+        .sort((a,b)=>b.prob-a.prob).slice(0,3).map(s=>({score:s.score,prob:parseFloat(s.prob.toFixed(1))}));
+    }
+    if(!ftr&&!ou25&&!btts)return null;
+    return {fixtureId:fix.id,fulltimeResult:ftr||null,ou25:ou25||null,ou15:ou15||null,ou35:ou35||null,btts:btts||null,doubleChance:dc||null,topScores};
+  }catch{return null;}
+}
+
 // Average corners AND cards (won/conceded) over a team's recent finished matches.
 // Both come from the same /fixtures/statistics responses — no extra API calls.
 // Cached 12h in Redis. Returns { corners:{for,against}, cards:{for,against}, games }.
@@ -95,6 +140,11 @@ export default async function handler(req,res){
   if(!cfg)return res.status(200).json({injuries:null,prediction:null,debug:'no_key'});
   const{home,away,date,league}=req.query;
   if(!home||!away||!date||!league)return res.status(200).json({injuries:null,prediction:null,debug:'missing_params'});
+  // World Cup → Sportmonks (dedicated plan; api-football WC not enabled here)
+  if(league==='WorldCup'){
+    const sm=await fetchSportmonksWC(home,away,date);
+    return res.status(200).json({sportmonks:sm,injuries:null,prediction:null,debug:sm?'ok_wc':'wc_no_match'});
+  }
   const leagueId=LEAGUE_IDS[league];
   if(!leagueId)return res.status(200).json({injuries:null,prediction:null,debug:'unknown_league'});
   try{
