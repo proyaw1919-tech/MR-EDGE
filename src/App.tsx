@@ -5,6 +5,24 @@ import {
   BarChart2, List, Layers, ChevronDown
 } from "lucide-react";
 
+// Error boundary so a malformed AI response can never white-screen the whole app
+class PredictionErrorBoundary extends React.Component<{ children: React.ReactNode; lang?: string }, { hasError: boolean }> {
+  constructor(props: any) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(err: any) { try { console.error("Prediction render error:", err); } catch {} }
+  render() {
+    if (this.state.hasError) {
+      const lang = this.props.lang;
+      return (
+        <div style={{ padding: "16px 18px", background: "rgba(255,107,107,0.06)", border: "1px solid rgba(255,107,107,0.25)", borderRadius: 8, color: "#ff6b6b", fontSize: 13, lineHeight: 1.6 }}>
+          {lang === "zh" ? "预测渲染出错,请再点一次 Predict 重试。" : lang === "ms" ? "Ralat memaparkan ramalan — sila tekan Predict sekali lagi." : "Something went wrong rendering this prediction — please tap Predict again."}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Robust JSON parser
 function parseFlexibleJSON(text: string): any {
   let cleaned = text.replace(/```json|```/g, "").trim();
@@ -620,7 +638,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v11"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v12"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -2918,8 +2936,16 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
               </div>
             )}
           </div>
-          {expandedData.result && isRecent && <RecentAnalysis match={match} result={expandedData.result} t={t} />}
-          {expandedData.result && !isRecent && <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} />}
+          {expandedData.result && isRecent && (
+            <PredictionErrorBoundary lang={expandedData.lang || "en"}>
+              <RecentAnalysis match={match} result={expandedData.result} t={t} />
+            </PredictionErrorBoundary>
+          )}
+          {expandedData.result && !isRecent && (
+            <PredictionErrorBoundary lang={expandedData.lang || "en"}>
+              <UpcomingPrediction match={match} result={expandedData.result} t={t} lang={expandedData.lang || "en"} teamStats={expandedData.teamStats} oddsFound={expandedData.oddsFound} />
+            </PredictionErrorBoundary>
+          )}
         </div>
       )}
     </div>
@@ -2935,6 +2961,17 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
     keyFactors, reasoning, watchOut,
     playerWatch, injuries, htPrediction, scorelineProbabilities, corners, cards, handicap
   } = result;
+
+  // Guard: if the AI response is missing the core score, show a graceful retry
+  // message instead of crashing the whole app on predictedScore.home.
+  const validScore = predictedScore && typeof predictedScore.home === "number" && typeof predictedScore.away === "number";
+  if (!validScore || !winProbability) {
+    return (
+      <div style={{ padding: "16px 18px", background: "rgba(255,107,107,0.06)", border: "1px solid rgba(255,107,107,0.25)", borderRadius: 8, color: "#ff6b6b", fontSize: 13, lineHeight: 1.6 }}>
+        {lang === "zh" ? "AI 返回的数据不完整,请再点一次 Predict 重试。" : lang === "ms" ? "Data ramalan tidak lengkap — sila tekan Predict sekali lagi." : "The prediction came back incomplete — please tap Predict again."}
+      </div>
+    );
+  }
 
   const confPct = typeof confidencePercent === "number" ? confidencePercent
     : confidence === "High" ? 80 : confidence === "Medium" ? 60 : 40;
