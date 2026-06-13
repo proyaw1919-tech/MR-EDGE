@@ -638,7 +638,7 @@ export default function BM8Predictor() {
   // ====================== CACHE HELPERS ======================
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CACHE_VERSION = "v13"; // bump this to invalidate all old caches
+  const CACHE_VERSION = "v14"; // bump this to invalidate all old caches
   const getCacheKey = (match, language) => {
     return `bm8_pred_${CACHE_VERSION}_${language}_${match.league}_${match.home}_${match.away}_${match.date}`;
   };
@@ -1323,10 +1323,10 @@ Respond ONLY with valid JSON in this EXACT structure:
   "matchType": "<one phrase: e.g. High-scoring | Tactical | Open | Defensive | Cagey | End-to-end>",
   "overUnder25": {"over": "<odds e.g. 2.10>", "under": "<odds e.g. 1.75>"},
   "htPrediction": {"home": <int>, "away": <int>},
-  "corners": {"homeCorners": <int>, "awayCorners": <int>, "totalCorners": <int>, "line": "<e.g. Over 9.5>", "recommendation": "<Over|Under> <X.5> corners", "confidence": "Low|Medium|High"},
-  "cards": {"homeCards": <number>, "awayCards": <number>, "totalCards": <number>, "recommendation": "<Over|Under> <X.5> cards", "confidence": "Low|Medium|High"},
-  "handicap": {"line": "<Asian handicap line from the home team's perspective, e.g. -0.5, +1, 0>", "pick": "home|away", "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
-  "goalsOU": {"line": "<the goals line, e.g. 2.5>", "pick": "over|under", "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
+  "corners": {"homeCorners": <int>, "awayCorners": <int>, "totalCorners": <int>, "line": "<e.g. 9.5>", "pick": "over|under|avoid", "edge": <num, true% minus implied%, may be negative>, "value": <true|false>, "confidence": "Low|Medium|High"},
+  "cards": {"homeCards": <number>, "awayCards": <number>, "totalCards": <number>, "line": "<e.g. 4.5>", "pick": "over|under|avoid", "edge": <num>, "value": <true|false>, "confidence": "Low|Medium|High"},
+  "handicap": {"line": "<Asian handicap line from the home team's perspective, e.g. -0.5, +1, 0>", "pick": "home|away|avoid", "edge": <num>, "value": <true|false>, "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
+  "goalsOU": {"line": "<the goals line, e.g. 2.5>", "pick": "over|under|avoid", "edge": <num>, "value": <true|false>, "reasoning": "<one short sentence>", "confidence": "Low|Medium|High"},
   "scorelineProbabilities": [{"score": "1-0", "prob": <int>}, {"score": "0-0", "prob": <int>}, {"score": "2-1", "prob": <int>}],
   "homeForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
   "awayForm": ["W|L|D", "W|L|D", "W|L|D", "W|L|D", "W|L|D"],
@@ -1374,10 +1374,17 @@ Rules:
 - bttsChance: integer 0-100 representing % probability both teams score
 - htPrediction: conservative half-time score prediction (usually 0-0, 1-0, or 0-1); total HT goals should typically be ≤ predictedScore total
 - scorelineProbabilities: top 3 most likely exact scores with % probability; all probs should sum ≤ 100; anchor to predictedScore and estGoals
-- corners: predict total corners for the match. If CORNER KICK DATA is provided above, anchor homeCorners/awayCorners/totalCorners on those real averages (a typical match has 8-12 total corners). Set "recommendation" to the over/under line you'd bet (e.g. "Over 9.5 corners") and "confidence" based on how consistent the data is. If no corner data is provided, estimate from team attacking style and set confidence to "Low".
-- goalsOU: recommend Over or Under total goals. Anchor on estGoals and, if provided, the SPORTMONKS Over/Under probabilities and the market O/U line/odds. Use the market line (usually 2.5) as "line". Pick "over" if expected goals clearly exceed the line, "under" if clearly below; set confidence Low when it's close to the line. Keep "reasoning" to one short sentence.
-- handicap: recommend the Asian Handicap bet. If a market Asian Handicap line is provided above, use that exact line and decide which side (home/away) is more likely to cover it based on your win probability and expected margin. If no market line is given, infer a sensible line from your prediction. "line" is always from the home team's perspective (negative = home gives goals, positive = home receives). Set confidence on how clear the edge is.
-- cards: predict total cards (yellow+red combined) for the match. If CARD DATA is provided above, anchor homeCards/awayCards/totalCards on those real averages (a typical match has 3-5 total cards; derbies, relegation battles and strict referees push higher). Factor in the referee if known and match intensity/stakes. Set "recommendation" to the over/under line you'd bet (e.g. "Over 4.5 cards") and "confidence" on data consistency. If no card data is provided, estimate from match intensity and set confidence to "Low".
+- CRITICAL — VALUE BETTING applies to handicap, goalsOU, corners AND cards. A bet is ONLY worth recommending when it has positive expected value: your estimated TRUE probability of the outcome must exceed the bookmaker's IMPLIED probability (implied % = 100 / decimal odds). For each of these four markets:
+  * Estimate the TRUE probability of your favoured side.
+  * Determine the IMPLIED probability: if real market odds for that bet are given above (Sportmonks/bet365 Asian Handicap, Over/Under, Corners), use 100/odds. Otherwise assume standard Asian pricing of 1.90 (≈ 52.6% implied).
+  * edge = trueProbability − impliedProbability (percentage points; can be negative).
+  * If edge ≥ 4, set "pick" to that side and "value": true. If neither side reaches edge ≥ 4, set "pick": "avoid" and "value": false.
+  * Put the numeric edge (the favoured side's edge) in "edge".
+  * NEVER recommend a side just because it is the predicted winner. A strong favourite at short odds is usually NEGATIVE value — e.g. a 42% team priced at 1.66 implies 60%, so edge = 42−60 = −18 → "avoid". Recommending it would lose money long-term.
+- corners: also fill homeCorners/awayCorners/totalCorners. Anchor on CORNER KICK DATA / market corner line if provided (typical match 8-12 total). "line" is the over/under line (e.g. "9.5"). Apply the VALUE BETTING logic for "pick"/"edge"/"value".
+- goalsOU: "line" is the goals line (usually 2.5, or the market line shown). Anchor true probability on estGoals + SPORTMONKS Over/Under probabilities. Apply the VALUE BETTING logic.
+- handicap: "line" is the Asian Handicap from the home team's perspective (negative = home gives goals). Use the market line if provided. Estimate the probability the picked side COVERS that line, compare to the handicap odds, and apply the VALUE BETTING logic — "avoid" short-priced favourites that don't cover with margin.
+- cards: also fill homeCards/awayCards/totalCards (yellow+red combined; typical 3-5, derbies/strict referees higher). "line" is the over/under line (e.g. "4.5"). Apply the VALUE BETTING logic.
 - RESPOND IN ${langName} for all sentence fields. Keep "W"/"L"/"D" as English letters, riskLevel/status fields in English.`;
       // Try Claude (Opus 4.8) first, fall back to Gemini
       const callAI = async (endpoint: string, body: object, timeoutMs = 55000) => {
@@ -2954,6 +2961,30 @@ function MatchRow({ match, onClick, isPredicting, t, expandedData, isExpanded, o
   );
 }
 
+// Value-aware recommendation bar: green + ⚡VALUE when +EV, grey "avoid" otherwise
+function RecoBar({ pickText, avoid, value, edge, reasoning, confidence, lang }: any) {
+  const color = avoid ? "#8a8a8a" : (value ? "#22c55e" : "#F0B429");
+  const bg = avoid ? "rgba(255,255,255,0.04)" : (value ? "rgba(34,197,94,0.08)" : "rgba(240,180,41,0.06)");
+  const bd = avoid ? "rgba(255,255,255,0.1)" : (value ? "rgba(34,197,94,0.35)" : "rgba(240,180,41,0.25)");
+  const avoidText = lang === "zh" ? "避开 · 无价值" : lang === "ms" ? "Elak — tiada nilai" : "Avoid — no value";
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 14px", background: bg, border: `1px solid ${bd}`, borderRadius: 6 }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+          <span>{avoid ? avoidText : pickText}</span>
+          {!avoid && value && (
+            <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 4, background: "rgba(34,197,94,0.18)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.4)", letterSpacing: "0.08em", fontWeight: 700 }}>
+              ⚡ VALUE{typeof edge === "number" && edge > 0 ? ` +${Math.round(edge)}%` : ""}
+            </span>
+          )}
+        </div>
+        {reasoning && <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 3 }}>{reasoning}</div>}
+      </div>
+      {!avoid && confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em", whiteSpace: "nowrap" as const }}>{confidence}</span>}
+    </div>
+  );
+}
+
 function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFound }: any) {
   const {
     predictedScore, winProbability,
@@ -3124,37 +3155,37 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
                 </div>
               </div>
             )}
-            {goalsOU?.pick && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: overPicked ? "rgba(34,197,94,0.08)" : "rgba(96,165,250,0.08)", border: `1px solid ${overPicked ? "rgba(34,197,94,0.3)" : "rgba(96,165,250,0.3)"}`, borderRadius: 6 }}>
-                <div>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: overPicked ? "#22c55e" : "#60a5fa", fontFamily: "inherit" }}>
-                    {overPicked ? "Over" : "Under"} {ouLine} {lang === "zh" ? "进球" : "goals"}
-                  </span>
-                  {goalsOU.reasoning && <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 3 }}>{goalsOU.reasoning}</div>}
-                </div>
-                {goalsOU.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em", whiteSpace: "nowrap" as const }}>{goalsOU.confidence} confidence</span>}
-              </div>
+            {goalsOU && (
+              <RecoBar
+                lang={lang}
+                avoid={!goalsOU.pick || goalsOU.pick === "avoid"}
+                value={goalsOU.value}
+                edge={goalsOU.edge}
+                pickText={`${overPicked ? "Over" : "Under"} ${ouLine} ${lang === "zh" ? "进球" : "goals"}`}
+                reasoning={goalsOU.reasoning}
+                confidence={goalsOU.confidence}
+              />
             )}
           </div>
         );
       })()}
 
-      {handicap && (handicap.line != null && handicap.pick) && (
+      {handicap && handicap.line != null && (
         <div style={{ marginBottom: 20 }}>
           <div style={styles.sectionTitle}>📐 ASIAN HANDICAP</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.35)", borderRadius: 6 }}>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#60a5fa", fontFamily: "inherit" }}>
-                {handicap.pick === "home" ? match.home : match.away} {handicap.line}
-              </div>
-              {handicap.reasoning && <div style={{ fontSize: 11, color: "#8a8a8a", marginTop: 3 }}>{handicap.reasoning}</div>}
-            </div>
-            {handicap.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em", whiteSpace: "nowrap" as const }}>{handicap.confidence} confidence</span>}
-          </div>
+          <RecoBar
+            lang={lang}
+            avoid={!handicap.pick || handicap.pick === "avoid"}
+            value={handicap.value}
+            edge={handicap.edge}
+            pickText={`${handicap.pick === "home" ? match.home : match.away} ${handicap.line}`}
+            reasoning={handicap.reasoning}
+            confidence={handicap.confidence}
+          />
         </div>
       )}
 
-      {corners && (corners.totalCorners != null || corners.recommendation) && (
+      {corners && (corners.totalCorners != null || corners.pick) && (
         <div style={{ marginBottom: 20 }}>
           <div style={styles.sectionTitle}>⛳ CORNERS</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
@@ -3171,16 +3202,20 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
               <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>{corners.awayCorners ?? "–"}</div>
             </div>
           </div>
-          {corners.recommendation && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#22c55e", fontFamily: "inherit" }}>{corners.recommendation}</span>
-              {corners.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{corners.confidence} confidence</span>}
-            </div>
+          {corners.pick && (
+            <RecoBar
+              lang={lang}
+              avoid={corners.pick === "avoid"}
+              value={corners.value}
+              edge={corners.edge}
+              pickText={`${corners.pick === "over" ? "Over" : "Under"} ${corners.line ?? ""} ${lang === "zh" ? "角球" : "corners"}`}
+              confidence={corners.confidence}
+            />
           )}
         </div>
       )}
 
-      {cards && (cards.totalCards != null || cards.recommendation) && (
+      {cards && (cards.totalCards != null || cards.pick) && (
         <div style={{ marginBottom: 20 }}>
           <div style={styles.sectionTitle}>🟨 CARDS</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
@@ -3197,11 +3232,15 @@ function UpcomingPrediction({ match, result, t, lang = "en", teamStats, oddsFoun
               <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "inherit" }}>{cards.awayCards ?? "–"}</div>
             </div>
           </div>
-          {cards.recommendation && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "rgba(250,204,21,0.08)", border: "1px solid rgba(250,204,21,0.3)", borderRadius: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#facc15", fontFamily: "inherit" }}>{cards.recommendation}</span>
-              {cards.confidence && <span style={{ fontSize: 10, color: "#8a8a8a", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{cards.confidence} confidence</span>}
-            </div>
+          {cards.pick && (
+            <RecoBar
+              lang={lang}
+              avoid={cards.pick === "avoid"}
+              value={cards.value}
+              edge={cards.edge}
+              pickText={`${cards.pick === "over" ? "Over" : "Under"} ${cards.line ?? ""} ${lang === "zh" ? "牌" : "cards"}`}
+              confidence={cards.confidence}
+            />
           )}
         </div>
       )}
